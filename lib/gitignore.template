@@ -1,0 +1,42 @@
+# Compiled source 
+*.com
+*.class
+*.o
+*.so
+.directory
+*.pyc
+tags
+
+# Executables
+*.out
+*.hex
+
+#Vivado
+*.log
+*.jou
+*_prj/
+*.Xil/
+
+#vim 
+*.swp
+
+# backup
+*.bak
+*.sav
+
+
+#Folders 
+
+build/
+ip/
+xpr/
+
+
+#cFDK specific files 
+.ip_guard
+*.date
+*.vivado*
+*.dat
+env/
+dcps/
+

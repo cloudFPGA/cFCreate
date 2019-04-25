@@ -1,0 +1,14 @@
+#!/bin/bash
+#  *
+#  *                       cloudFPGA
+#  *     Copyright IBM Research, All Rights Reserved
+#  *    =============================================
+#  *     Created: Apr 2019
+#  *     Authors: FAB, WEI, NGL
+#  *
+#  *     Description:
+#  *       Bash script to invoke the cFBuild framework
+#  *
+
+source cfenv/bin/activate
+python3 ./lib/cf_build.py "$@"
