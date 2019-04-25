@@ -54,14 +54,14 @@ Contact: {ngl,fab,wei}@zurich.ibm.com
 ```bash
 ./cFBuild new --cfdk-zip=./<path>/cFDK-v0.1.zip <path-to-project-folder>
 ```
-The `project-folder` should not exist (yet) or must be empty.
+The `project-folder` should not exist (yet) or must be empty (or an new git repository).
 
 2. New cFp using Github
 
 ```bash
 ./cFBuild new --cfdk-version=v0.1 <path-to-project-folder>
 ```
-The `project-folder` should not exist (yet) or must be empty.
+The `project-folder` should not exist (yet) or must be empty (or an new git repository).
 If the default Github URL is not accessible, an alternative can be specified with `-git-url`.
 
 3. Update an existing cFp
@@ -104,4 +104,7 @@ $ make monolithic
 # or 
 $ make pr
 ```
+
+Resulting bitfiles are in `./dcps/`.
+
 
