@@ -75,22 +75,23 @@ Structure of a cFp
 --------------
 
 ```bash
-cFDK/ (submodule)
-TOP/
-└──tcl/ (don't touch, is copied from cFDK) 
-└──xdc/ (add debug nets here)
-└──hdl/
-   └──top.vhdl
-   └── a.s.o. (if custom hdl files for TOP)
-ROLE/
-└── role1 (or not, depends on PR, etc.)
-└── a.s.o.
-dcps/ (contains the dcps and bitfiles)
-xpr/ (vivado project)
-ip/ (contains the IP cores (generated during build))
-Makefile
-env/
-└── setenv.sh (sets the envrionments)
+$ tree <cFp_repo>
+    cFDK/ (submodule)
+    TOP/
+    └──tcl/ (don't touch, is copied from cFDK) 
+    └──xdc/ (add debug nets here)
+    └──hdl/
+       └──top.vhdl
+       └── a.s.o. (if custom hdl files for TOP)
+    ROLE/
+    └── role1 (or not, depends on PR, etc.)
+    └── a.s.o.
+    dcps/ (contains the dcps and bitfiles)
+    xpr/ (vivado project)
+    ip/ (contains the IP cores (generated during build))
+    Makefile
+    env/
+    └── setenv.sh (sets the envrionments)
 ```
 
 ### cFDK as git submodule
@@ -103,6 +104,7 @@ Therefore, add a file `<cFp_repo>/.gitmodules` with the following content:
 	path = cFDK
 	url = git@github.ibm.com:cloudFPGA/cFDK.git
 ```
+Or use the alternative `git-url` as mentioned above.
 
 Afterwards, run: 
 
