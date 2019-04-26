@@ -93,6 +93,27 @@ env/
 └── setenv.sh (sets the envrionments)
 ```
 
+### cFDK as git submodule
+
+It is recommended, to declare the cFDK folder as git submodule to the cFp git repository. 
+Therefore, add a file `<cFp_repo>/.gitmodules` with the following content:
+
+```config
+[submodule "cFDK"]
+	path = cFDK
+	url = git@github.ibm.com:cloudFPGA/cFDK.git
+```
+
+Afterwards, run: 
+
+```bash
+$ git submodule init
+$ git submodule update
+$ git commit
+```
+
+Further information about git submodules can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
+
 Build a cFp
 ----------------
 
