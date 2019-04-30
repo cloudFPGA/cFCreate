@@ -3,7 +3,7 @@ cFBuild
 **cloudFPGA Build Framework**
 
 
-Usage
+Requirements
 -------------
 
 ### Python Virtualenv
@@ -14,6 +14,9 @@ $ virtualenv -p /usr/bin/python3.6 cfenv
 $ source cfenv/bin/activate
 $ pip install -r requirements.txt
 ```
+
+Usage
+-----------
 
 ### Create new cloudFPGA project (cFp)
 
@@ -130,4 +133,11 @@ $ make pr
 
 Resulting bitfiles are in `./dcps/`.
 
+Known Limitations/Bugs
+-----------------------
 
+* Currently, only the non-PR flow (i.e. `monolithic`) is supported. Hence, it is recommended to:
+  * create a cFp per Role
+  * The `<cFp-repo>/ROLE/` should contain only one Role. 
+  * Answer the question *Name of the (first) Role* with **`default`**.
+* SRA `MPIv0_x2Mp_x2Mc` is currently broken
