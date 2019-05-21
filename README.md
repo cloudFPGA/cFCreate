@@ -6,7 +6,28 @@ cFBuild
 Requirements
 -------------
 
-### Python Virtualenv
+### Python (we recommend the use of python3.6)
+```bash
+$ which python3.6
+no python3 in $PATH
+$ sudo su
+$ yum install python36-devel python36-tkinter libcap-devel
+$ which python3.6
+/usr/bin/python3.6
+$ exit
+```
+### Python Pip & Virtualenv
+```bash
+$ sudo su
+$ /usr/bin/python3.6 -m ensurepip
+$ pip3 install virtualenv
+
+# Warning: On some installations, you may need to update the access permissions of the newly created files and directories with:
+$ chmod 755 -R /usr/lib/python3.6/site-packages/virtualenv*
+$ exit
+```
+
+### Setup your Virtualenv
 ```bash
 $ which python3.6
 /usr/bin/python3.6
