@@ -69,7 +69,8 @@ If the default Github URL is not accessible, an alternative can be specified wit
 
 3. Update an existing cFp
 
-If it is necessary to regenerate the environment of the cFp (e.g. switch of SRA type or cFDK version), run:
+If it is necessary to regenerate the environment of the cFp (e.g. switch of SRA type or cFDK version,
+ **or after a fresh clone of an existing cFp**), run:
 ```bash
 ./cFBuild update <path-to-project-folder>
 ```
@@ -97,17 +98,49 @@ $ tree <cFp_repo>
     └── setenv.sh (sets the envrionments)
 ```
 
+### Push new cFp to a git repository
+
+Basically, follow [this steps](https://help.github.com/en/articles/adding-an-existing-project-to-github-using-the-command-line).
+In short:
+```bash 
+$ cd <cFp_repo>
+$ git init
+$ git add . 
+$ git commit -m "First commit"
+$ git remote add origin <remote-repository-URL>
+$ git push origin master
+```
+
 ### cFDK as git submodule
 
 It is recommended, to declare the cFDK folder as git submodule to the cFp git repository. 
-Therefore, add a file `<cFp_repo>/.gitmodules` with the following content:
+Therefore, execute the following:
+```bash
+$ cd <cFp_repo>
+$ git submodule add --name cFDK file://./cFDK/
+```
+*Before commit, you must manually update the path to the remote location*, if desired.
+
+Hence, overwrite the file `<cFp_repo>/.gitmodules` with the following content:
 
 ```config
 [submodule "cFDK"]
 	path = cFDK
 	url = git@github.ibm.com:cloudFPGA/cFDK.git
 ```
+also, update `.git/config` accordingly, from:
+```bash
+[submodule "cFDK"]
+        url = file://./cFDK/
+```
+to
+```bash
+[submodule "cFDK"]
+        url = git@github.ibm.com:cloudFPGA/cFDK.git
+```
+
 Or use the alternative `git-url` as mentioned above.
+
 
 Afterwards, run: 
 
@@ -115,6 +148,7 @@ Afterwards, run:
 $ git submodule init
 $ git submodule update
 $ git commit
+$ git push
 ```
 
 Further information about git submodules can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
