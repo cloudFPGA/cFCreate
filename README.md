@@ -5,35 +5,28 @@ cFBuild
 
 Requirements
 -------------
+The cFBuild script has some python dependencies, hence we recommend the usage of virtualenvs. 
 
-### Python (we recommend the use of python3.6)
-```bash
-$ which python3.6
-no python3 in $PATH
-$ sudo su
-$ yum install python36-devel python36-tkinter libcap-devel
-$ which python3.6
-/usr/bin/python3.6
-$ exit
-```
-### Python Pip & Virtualenv
-```bash
-$ sudo su
-$ /usr/bin/python3.6 -m ensurepip
-$ pip3 install virtualenv
-
-# Warning: On some installations, you may need to update the access permissions of the newly created files and directories with:
-$ chmod 755 -R /usr/lib/python3.6/site-packages/virtualenv*
-$ exit
-```
+**This python Virtual environment is only required for the execution of cFBuild, not for the build of the FPGA bistreams in a cFp!**
 
 ### Setup your Virtualenv
+
+(we recommend the use of python3.6)
+
 ```bash
 $ which python3.6
 /usr/bin/python3.6
 $ virtualenv -p /usr/bin/python3.6 cfenv
 $ source cfenv/bin/activate
 $ pip install -r requirements.txt
+```
+
+You may have to install `pip` and `virtualenv` first: 
+```bash
+$ sudo su
+$ /usr/bin/python3.6 -m ensurepip
+$ pip3 install virtualenv
+$ exit
 ```
 
 Usage
