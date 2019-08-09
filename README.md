@@ -11,7 +11,7 @@ The cFBuild script has some python dependencies, hence we recommend the usage of
 
 ### Setup your Virtualenv
 
-(we recommend the use of python3.6)
+(we recommend the use of python3.5 or python3.6)
 
 ```bash
 $ which python3.6
