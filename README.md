@@ -13,7 +13,10 @@ The cFBuild script has some python dependencies, hence we recommend the usage of
 
 (we recommend the use of python3.5 or python3.6)
 
+If you received this repository as Zip-folder, extract it into `<your-path>/cFBuild`. Otherwise clone this repositroy into `<your-path/cFBuild`. 
+
 ```bash
+$ cd <your-path>/cFBuid/
 $ which python3.6
 /usr/bin/python3.6
 $ virtualenv -p /usr/bin/python3.6 cfenv
