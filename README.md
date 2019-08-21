@@ -34,17 +34,13 @@ $ exit
 
 Usage
 -----------
-
-### Create new cloudFPGA project (cFp)
-
-To create a new cFp, use the `cFBuild` command:
 ```bash
 $ ./cFBuild -h
 cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
-    cfBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] <path-to-project-folder>
+    cfBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
     cfBuild update  <path-to-project-folder>
     
     cfBuild -h|--help
@@ -62,34 +58,45 @@ Options:
                                 'latest' will use the latest available version.
     --git-url=<git-url>         Uses the given URL to clone cFDK instead the default.
     --cfdk-zip=<path-to-zip>    If the cFDK can't be reached via Github, a zip can be used.
+    --git-init                  Creates the new cFp as git-repo; Adds the cFDK as git submodule, if not using a cfdk-zip
 
 Copyright IBM Research, All Rights Reserved.
 Contact: {ngl,fab,wei}@zurich.ibm.com
 ```
 
+There are two typical use-cases:
+1. [Create a new project from scratch with an empty folder](#1-create-new-cloudfpga-project-cfp)
+2. [Update an existing project, e.g. after a fresh clone or to switch Shell types](#2-update-an-existing-cfp)
+
+### 1. Create new cloudFPGA project (cFp)
+
+To create a new cFp, use the `cFBuild` command:
+
 **The script will ask for the type of SRA or cF module --> see cFDK documentation.**
+The `project-folder` should not exist (yet) or must be empty.
 
 1. New cFp with a cFDK-zip
-
 ```bash
 ./cFBuild new --cfdk-zip=./<path>/cFDK-v0.1.zip <path-to-project-folder>
 ```
-The `project-folder` should not exist (yet) or must be empty (or an new git repository).
-
-2. New cFp using Github
+2. New cFp using cFDK from Github
 
 ```bash
 ./cFBuild new --cfdk-version=v0.1 <path-to-project-folder>
 ```
-The `project-folder` should not exist (yet) or must be empty (or an new git repository).
+
 If the default Github URL is not accessible, an alternative can be specified with `-git-url`.
 
-3. Update an existing cFp
+**The new project is initalized as git repository, if the option `--git-init` is used.**
+In case of using cFDK from Github, this is initialized as git-submodule.
+To init the project as git repository can also be done manually, see the section [Git integration](#git-integration) below.
+
+### 2. Update an existing cFp
 
 If it is necessary to regenerate the environment of the cFp (e.g. switch of SRA type or cFDK version,
  **or after a fresh clone of an existing cFp**), run:
 ```bash
-./cFBuild update <path-to-project-folder>
+./cFBuild update <path-to-project-folder> 
 ```
 
 Structure of a cFp
@@ -115,6 +122,27 @@ $ tree <cFp_repo>
     └── setenv.sh (sets the envrionments)
 ```
 
+
+Build a cFp
+----------------
+
+See the documentation of cFDK.
+In short:
+```bash
+$ source env/setenv.sh  # DON'T FORGETT!
+$ make monolithic
+# or 
+$ make pr
+```
+
+Resulting bitfiles are in `./dcps/`.
+
+Git integration
+--------------------
+
+**If not done with the `--git-init` option** during the creation of a new cFp, 
+the following steps are necessary to use the cFp as git repository and/or use the cFDK as git-submodule:
+
 ### Push new cFp to a git repository
 
 Basically, follow [this steps](https://help.github.com/en/articles/adding-an-existing-project-to-github-using-the-command-line).
@@ -127,6 +155,8 @@ $ git commit -m "First commit"
 $ git remote add origin <remote-repository-URL>
 $ git push origin master
 ```
+
+*(This could also be done by `cFBuild` with the `--git-init` option.)*
 
 ### cFDK as git submodule
 
@@ -170,19 +200,8 @@ $ git push
 
 Further information about git submodules can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
-Build a cFp
-----------------
+*(This could also be done by `cFBuild` with the `--git-init` option.)*
 
-See the documentation of cFDK.
-In short:
-```bash
-$ source env/setenv.sh  # DON'T FORGETT!
-$ make monolithic
-# or 
-$ make pr
-```
-
-Resulting bitfiles are in `./dcps/`.
 
 Known Limitations/Bugs
 -----------------------

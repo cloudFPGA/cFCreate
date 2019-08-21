@@ -21,7 +21,7 @@ docstr="""cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
-    cfBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] <path-to-project-folder>
+    cfBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
     cfBuild update  <path-to-project-folder>
     
     cfBuild -h|--help
@@ -39,6 +39,7 @@ Options:
                                 'latest' will use the latest available version.
     --git-url=<git-url>         Uses the given URL to clone cFDK instead the default.
     --cfdk-zip=<path-to-zip>    If the cFDK can't be reached via Github, a zip can be used.
+    --git-init                  Creates the new cFp as git-repo; Adds the cFDK as git submodule, if not using a cfdk-zip
 
 Copyright IBM Research, All Rights Reserved.
 Contact: {ngl,fab,wei}@zurich.ibm.com
@@ -153,11 +154,14 @@ def create_cfp_dir_structure(folder_path):
     os.system("mkdir -p {}/env/".format(folder_path))
 
 
-def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None):
+def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False):
     if cfdk_tag is None and cfdk_zip is None:
         return "ERROR: Missing manadtory arguments", -2
 
     os.system("mkdir -p {}".format(folder_path))
+
+    if git_init:
+        os.system("git init {}".format(folder_path))
 
     if cfdk_zip is not None:
         rc = os.system("unzip {} -d {}".format(cfdk_zip, folder_path))
@@ -168,11 +172,21 @@ def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None):
             git_url=cfdk_url
 
         tag_str = ""
+        git_checkout_version = False
         if cfdk_tag != "latest":
             tag_str = "-b '{}'".format(cfdk_tag)
-        rc = os.system("git clone {} --single-branch --depth 1 {} {}/cFDK/".format(tag_str, git_url, folder_path))
-        if rc !=0:
-            return "ERROR: Failed to checkout cFDK", -1
+            git_checkout_version = True
+        if git_init:
+            rc = os.system("cd {}; git submodule add -f {} ./cFDK/".format(folder_path, git_url))
+            if rc != 0:
+                return "ERROR: Failed to init submodule cFDK", -1
+            if git_checkout_version:
+                os.system("cd {}/cFDK/; git checkout {}".format(folder_path, tag_str))
+                # no error handling for now
+        else:
+            rc = os.system("git clone {} --single-branch --depth 1 {} {}/cFDK/".format(tag_str, git_url, folder_path))
+            if rc != 0:
+                return "ERROR: Failed to checkout cFDK", -1
 
     create_cfp_dir_structure(folder_path)
 
@@ -233,6 +247,8 @@ def copy_templates_and_set_env(folder_path, envs):
     os.system("cp {0}/cFDK/SRA/LIB/TOP/Makefile.template {0}/Makefile".format(folder_path))
 
     env_file = "{}/env/setenv.sh".format(folder_path)
+    # just to be sure...
+    os.system("mkdir -p {}/env/".format(folder_path))
 
     with open("./lib/setenv.template", "r") as input, open(env_file, "w") as outfile:
         out = input.read()
@@ -250,8 +266,12 @@ def main():
     arguments = docopt(docstr, version='0.1')
 
     folder_path = arguments['<path-to-project-folder>']
+    # if folder_path[-1] == '/':
+    #    # to remove / to prevent //
+    #    folder_path = folder_path[:-1]
+
     if arguments['new']:
-        msg, rc = create_new_cfp(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path, git_url=arguments['--git-url'])
+        msg, rc = create_new_cfp(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path, git_url=arguments['--git-url'], git_init=arguments['--git-init'])
         if rc != 0:
             print(msg)
             exit(1)
@@ -277,6 +297,13 @@ def main():
     # pprint(envs)
 
     copy_templates_and_set_env(folder_path, envs)
+
+    if arguments['--git-init']:
+        os.system("cd {}; git add .; git commit -m'cFp init by cFBuild'".format(folder_path))
+        print("To complete the git repository initialization execute: \n" +
+              "\t$ git remote add origin <remote-repository-URL>\n" +
+              "\t$ git push origin master\n")
+
     print("SUCCESS!\ncloudFPGA project in {} ready to use!".format(envs['abs_path']) +
           "\nDon't forget to `source env/setenv.sh`")
 
