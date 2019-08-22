@@ -37,18 +37,20 @@ Usage
 ```bash
 $ ./cFBuild -h
 cloudFPGA Build Framework
-cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
+cFBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
-    cfBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
-    cfBuild update  <path-to-project-folder>
+    cFBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
+    cFBuild update  <path-to-project-folder>
+    cFBuild adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
     
-    cfBuild -h|--help
-    cfBuild -v|--version
+    cFBuild -h|--help
+    cFBuild -v|--version
 
 Commands:
     new             Creates a new cFp based on the given cFDK
     update          Update the environment setting of an existing cFp
+    adorn           Installs a cloudFPGA addon (cFa) to an existing cFp
 
 Options:
     -h --help       Show this screen.
@@ -59,14 +61,23 @@ Options:
     --git-url=<git-url>         Uses the given URL to clone cFDK instead the default.
     --cfdk-zip=<path-to-zip>    If the cFDK can't be reached via Github, a zip can be used.
     --git-init                  Creates the new cFp as git-repo; Adds the cFDK as git submodule, if not using a cfdk-zip
+    --cfa-repo=<cfagit>         Link to the cFa git repository
+    --cfa-zip=<path-to-zip>     Path to a cFa zip folder
 
 Copyright IBM Research, All Rights Reserved.
 Contact: {ngl,fab,wei}@zurich.ibm.com
 ```
 
-There are two typical use-cases:
+There are three typical use-cases:
 1. [Create a new project from scratch with an empty folder](#1-create-new-cloudfpga-project-cfp)
 2. [Update an existing project, e.g. after a fresh clone or to switch Shell types](#2-update-an-existing-cfp)
+3. [Beatify an existing project with an addon](#3-add-a-cloudfpga-addon-cfa-to-an-existing-cfp)
+
+
+**General notice:** The terms *'git url'* or 'git repo' always refrer to a link that can be *used to clone the repository!*
+E.g. `git@git.example.com:group/repo.git` or `https://git.example.com/group/repo.git`.
+If *'a zip folder'* is mentioned, a zip-file provided by the cloudFPGA team is meant, so that it has the right structure etc.
+
 
 ### 1. Create new cloudFPGA project (cFp)
 
@@ -99,6 +110,27 @@ If it is necessary to regenerate the environment of the cFp (e.g. switch of SRA 
 ./cFBuild update <path-to-project-folder> 
 ```
 
+### 3. Add a cloudFPGA addon (cFa) to an existing cFp
+
+Further features may be available outside the default cFDK. 
+There are again two ways to install them to an existing cFp:
+
+1. Using an existing git repository:
+```bash
+./cFBuild adorn --cfa-repo=<cfagit> <folder-name-for-addon> <path-to-project-folder>
+```
+2. Using a cFa-zip
+```bash
+./cFBuild adorn --cfa-zip=<path-to-zip> <folder-name-for-addon>  <path-to-project-folder>
+```
+
+The `<folder-name-for-addon>` will be the name of the folder that will be created in `<path-to-project-folder>` for the new cFa.
+
+
+If the cFp is a git-repository, all changes will be commited by `cFBuild` (maybe check the output for error messages).
+It is *not* necessary to run `cFBuild update` afterwards on any machine.
+
+
 Structure of a cFp
 --------------
 
@@ -120,6 +152,7 @@ $ tree <cFp_repo>
     Makefile
     env/
     └── setenv.sh (sets the envrionments)
+    <possible_addons/>
 ```
 
 

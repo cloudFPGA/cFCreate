@@ -21,15 +21,17 @@ docstr="""cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
-    cfBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
-    cfBuild update  <path-to-project-folder>
+    cFBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
+    cFBuild update  <path-to-project-folder>
+    cFBuild adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
     
-    cfBuild -h|--help
-    cfBuild -v|--version
+    cFBuild -h|--help
+    cFBuild -v|--version
 
 Commands:
     new             Creates a new cFp based on the given cFDK
     update          Update the environment setting of an existing cFp
+    adorn           Installs a cloudFPGA addon (cFa) to an existing cFp
 
 Options:
     -h --help       Show this screen.
@@ -40,6 +42,8 @@ Options:
     --git-url=<git-url>         Uses the given URL to clone cFDK instead the default.
     --cfdk-zip=<path-to-zip>    If the cFDK can't be reached via Github, a zip can be used.
     --git-init                  Creates the new cFp as git-repo; Adds the cFDK as git submodule, if not using a cfdk-zip
+    --cfa-repo=<cfagit>         Link to the cFa git repository
+    --cfa-zip=<path-to-zip>     Path to a cFa zip folder
 
 Copyright IBM Research, All Rights Reserved.
 Contact: {ngl,fab,wei}@zurich.ibm.com
@@ -190,7 +194,9 @@ def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False
 
     create_cfp_dir_structure(folder_path)
 
+    # copy templates that should be copied only during create
     os.system("cp ./lib/gitignore.template {0}/.gitignore".format(folder_path))
+    os.system("cp {0}/cFDK/SRA/LIB/TOP/Makefile.template {0}/Makefile".format(folder_path))
 
     return "", 0
 
@@ -242,9 +248,8 @@ def copy_templates_and_set_env(folder_path, envs):
     os.system("cp {0}/cFDK/MOD/{1}/hdl/top_{2}.vhdl.template {0}/TOP/hdl/top.vhdl".format(
         folder_path, envs['cf_mod'], envs['cf_sra']))
 
-    # update tcl  and Makefiles, too
+    # update tcl (Makefile only during create, just to not overwrite cFa's)
     os.system("cp -Rf {0}/cFDK/SRA/LIB/TOP/tcl/ {0}/TOP/".format(folder_path))
-    os.system("cp {0}/cFDK/SRA/LIB/TOP/Makefile.template {0}/Makefile".format(folder_path))
 
     env_file = "{}/env/setenv.sh".format(folder_path)
     # just to be sure...
@@ -262,6 +267,31 @@ def copy_templates_and_set_env(folder_path, envs):
     return 0
 
 
+def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
+    if git_url is None and zip_path is None:
+        return "ERROR: Missing manadtory arguments", 1
+
+    if zip_path is not None:
+        rc = os.system("unzip {} -d {}/{}/".format(zip_path, folder_path, addon_name))
+        if rc != 0:
+            return "ERROR: Failed to unzip cFa", 1
+    else:  # use git
+        rc = os.system("cd {}; git submodule add -f {} ./{}/".format(folder_path, git_url, addon_name))
+        if rc != 0:
+            return "ERROR: Failed to add submodule cFa", 1
+
+    # execute setup script
+    rc = os.system("/bin/bash {}/{}/setup.sh".format(folder_path, addon_name))
+    if rc != 0:
+        return "ERROR: Failed to setup cFa", 1
+
+    # commit changes if it is a git
+    os.system("[ -d {}/.git/ ] && (cd {}; git add ./{}/ ;git commit -a -m'Installed cFa {}')".format(
+        folder_path, folder_path, addon_name, addon_name))
+
+    return "SUCCESSfully added cFa {}!".format(addon_name), 0
+
+
 def main():
     arguments = docopt(docstr, version='0.1')
 
@@ -275,6 +305,10 @@ def main():
         if rc != 0:
             print(msg)
             exit(1)
+    elif arguments['adorn']:
+        msg, rc = install_cfa(folder_path, arguments['<folder-name-for-addon>'], git_url=arguments['--cfa-repo'], zip_path=arguments['--cfa-zip'])
+        print(msg)
+        exit(rc)
 
     questions = prepare_questions(folder_path)
     answers = prompt(questions)
