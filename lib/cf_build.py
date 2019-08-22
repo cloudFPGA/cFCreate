@@ -281,7 +281,7 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
             return "ERROR: Failed to add submodule cFa", 1
 
     # execute setup script
-    rc = os.system("/bin/bash {}/{}/setup.sh".format(folder_path, addon_name))
+    rc = os.system("/bin/bash {}/{}/install/setup.sh".format(folder_path, addon_name))
     if rc != 0:
         return "ERROR: Failed to setup cFa", 1
 
