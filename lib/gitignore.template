@@ -16,6 +16,7 @@ tags
 *.jou
 *_prj/
 *.Xil/
+hd_visual/
 
 #vim 
 *.swp
@@ -39,4 +40,6 @@ xpr/
 *.dat
 env/
 dcps/
+
+*.dcp
 
