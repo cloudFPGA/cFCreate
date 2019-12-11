@@ -271,23 +271,27 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
     if git_url is None and zip_path is None:
         return "ERROR: Missing manadtory arguments", 1
 
+    folder_abspath = os.path.abspath(folder_path)
+
     if zip_path is not None:
-        rc = os.system("unzip {} -d {}/{}/".format(zip_path, folder_path, addon_name))
+        rc = os.system("unzip {} -d {}/{}/".format(zip_path, folder_abspath, addon_name))
         if rc != 0:
             return "ERROR: Failed to unzip cFa", 1
     else:  # use git
-        rc = os.system("cd {}; git submodule add -f {} ./{}/".format(folder_path, git_url, addon_name))
+        rc = os.system("cd {}; git submodule add -f {} ./{}/".format(folder_abspath, git_url, addon_name))
         if rc != 0:
             return "ERROR: Failed to add submodule cFa", 1
 
     # execute setup script
-    rc = os.system("source {}/env/setenv.sh; /bin/bash {}/{}/install/setup.sh '{}'".format(folder_path, folder_path, addon_name, addon_name))
+    cmd_str = "/bin/bash -c \"source {}/env/setenv.sh && {}/{}/install/setup.sh '{}'\"".format(folder_abspath, folder_abspath, addon_name, addon_name)
+    print(cmd_str)
+    rc = os.system(cmd_str)
     if rc != 0:
         return "ERROR: Failed to setup cFa", 1
 
     # commit changes if it is a git
     os.system("[ -d {}/.git/ ] && (cd {}; git add ./{}/ ;git commit -a -m'Installed cFa {}')".format(
-        folder_path, folder_path, addon_name, addon_name))
+        folder_abspath, folder_abspath, addon_name, addon_name))
 
     return "SUCCESSfully added cFa {}!".format(addon_name), 0
 
