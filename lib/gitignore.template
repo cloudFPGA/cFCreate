@@ -38,7 +38,8 @@ xpr/
 *.date
 *.vivado*
 *.dat
-env/
+#env/
+this_machine_env.sh
 dcps/
 
 *.dcp

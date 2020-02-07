@@ -10,12 +10,16 @@
 #  *
 
 from __future__ import print_function, unicode_literals
+
+import json
 import os
 import sys
 from docopt import docopt
 import re
 from PyInquirer import prompt, print_json
 from pprint import pprint
+
+__version__ = 0.3
 
 docstr="""cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
@@ -53,7 +57,9 @@ cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"
 #cfdk_url = "https://github.ibm.com/cloudFPGA/cFDK.git"
 
 DEFAULT_MOD = "FMKU60"
-DEFAULT_SRA = "x1Udp_x1Tcp_x2Mp_x2Mc"
+DEFAULT_SRA = "Themisto"
+__env_file_name__ = "this_machine_env.sh"
+__version_string__ = "This cFp was created by cFBuild " + str(__version__)
 
 default_questions = [
     {
@@ -243,6 +249,20 @@ def prepare_questions(folder_path):
     return questions
 
 
+def create_json(folder_path, envs):
+    json_data = {}
+    json_data['version'] = __version_string__
+    json_data['cFpMOD'] = envs['cf_mod']
+    json_data['cFpSRAtype'] = envs['cf_sra']
+    json_data['usedRoleDir'] = envs['role_dir_1']
+    json_data['usedRole2Dir'] = envs['role_dir_2']
+    json_data['roleName1'] = envs['role_name_1']
+    json_data['roleName2'] = envs['role_name_2']
+
+    with open("{}/cFp.json".format(folder_path), "w+") as json_file:
+        json.dump(json_data, json_file, indent=4)
+
+
 def copy_templates_and_set_env(folder_path, envs):
 
     os.system("cp {0}/cFDK/MOD/{1}/hdl/top_{2}.vhdl.template {0}/TOP/hdl/top.vhdl".format(
@@ -251,16 +271,25 @@ def copy_templates_and_set_env(folder_path, envs):
     # update tcl (Makefile only during create, just to not overwrite cFa's)
     os.system("cp -Rf {0}/cFDK/SRA/LIB/TOP/tcl/ {0}/TOP/".format(folder_path))
 
-    env_file = "{}/env/setenv.sh".format(folder_path)
+    # env_file = "{}/env/setenv.sh".format(folder_path)
+    env_file = "{}/env/{}".format(folder_path, __env_file_name__)
     # just to be sure...
     os.system("mkdir -p {}/env/".format(folder_path))
 
-    with open("./lib/setenv.template", "r") as input, open(env_file, "w") as outfile:
+    # copy cFp kit
+    os.system("cp ./lib/machine_env.template {}/env/".format(folder_path))
+    os.system("cp ./lib/gen_env.py {}/env/".format(folder_path))
+    os.system("cp ./lib/setenv.sh {}/env/".format(folder_path))
+    os.system("chmod +x {}/env/setenv.sh".format(folder_path))
+
+    with open("./lib/machine_env.template", "r") as input, open(env_file, "w") as outfile:
         out = input.read()
         for i in range(0, len(__match_regex__)):
             out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
 
         outfile.write(out)
+
+    create_json(folder_path, envs)
 
     os.system("chmod +x {}".format(env_file))
 
@@ -297,7 +326,7 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
 
 
 def main():
-    arguments = docopt(docstr, version='0.1')
+    arguments = docopt(docstr, version=__version__)
 
     folder_path = arguments['<path-to-project-folder>']
     # if folder_path[-1] == '/':
