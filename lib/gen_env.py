@@ -82,7 +82,7 @@ def main():
         for i in range(0, len(__match_regex__)):
             out = re.sub(re.escape(__match_regex__[i]), data[__replace_regex__[i]], out)
 
-        if hasattr(data, 'additional_lines'):
+        if 'additional_lines' in data.keys():
             out += '\n\n'
             for e in data['additional_lines']:
                 new_line = str(e) + '\n'

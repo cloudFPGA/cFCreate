@@ -263,6 +263,24 @@ def create_json(folder_path, envs):
         json.dump(json_data, json_file, indent=4)
 
 
+def update_json(folder_path, new_entries=None, update_list=None):
+    with open("{}/cFp.json".format(folder_path), "r") as json_file:
+        data = json.load(json_file)
+
+    if new_entries is not None:
+        for e in new_entries:
+            data[e] = new_entries[e]
+    if update_list is not None:
+        for e in update_list:
+            if e in data.keys():
+                data[e].extend(update_list[e])
+            else:
+                data[e] = update_list[e]
+
+    with open("{}/cFp.json".format(folder_path), "w") as json_file:
+        json.dump(data, json_file, indent=4)
+
+
 def copy_templates_and_set_env(folder_path, envs):
 
     os.system("cp {0}/cFDK/MOD/{1}/hdl/top_{2}.vhdl.template {0}/TOP/hdl/top.vhdl".format(
@@ -317,6 +335,12 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
     rc = os.system(cmd_str)
     if rc != 0:
         return "ERROR: Failed to setup cFa", 1
+
+    update_json_data = {}
+    update_json_data['additional_lines'] = ['export {}Dir="$rootDir/{}/"'.format(addon_name.lower(), addon_name)]
+    update_json_data['cFa'] = [str(addon_name)]
+    update_json(folder_path, update_json_data)
+
 
     # commit changes if it is a git
     os.system("[ -d {}/.git/ ] && (cd {}; git add ./{}/ ;git commit -a -m'Installed cFa {}')".format(
