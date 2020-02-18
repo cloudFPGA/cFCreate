@@ -299,6 +299,7 @@ def copy_templates_and_set_env(folder_path, envs):
     os.system("cp ./lib/gen_env.py {}/env/".format(folder_path))
     os.system("cp ./lib/setenv.sh {}/env/".format(folder_path))
     os.system("chmod +x {}/env/setenv.sh".format(folder_path))
+    os.system("chmod +x {}/env/gen_env.sh".format(folder_path))
 
     with open("./lib/machine_env.template", "r") as input, open(env_file, "w") as outfile:
         out = input.read()
