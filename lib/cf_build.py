@@ -284,9 +284,11 @@ def update_json(folder_path, new_entries=None, update_list=None):
     if update_list is not None:
         for e in update_list:
             if e in data.keys():
-                data[e].extend(update_list[e])
+                new_list = data[e]
+                new_list.extend(update_list[e])
+                data[e] = list(set(new_list))
             else:
-                data[e] = update_list[e]
+                data[e] = list(set(update_list[e]))
 
     with open("{}/cFp.json".format(folder_path), "w") as json_file:
         json.dump(data, json_file, indent=4)
