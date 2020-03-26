@@ -308,7 +308,7 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
         folder_path, envs['cf_sra']))
 
     json_extend = False
-    config_file = "{0}/cFDK/SRA/LIP/TOP{1}/config.json".format(
+    config_file = "{0}/cFDK/SRA/LIP/TOP/{1}/config.json".format(
         folder_path, envs['cf_sra'])
     if os.path.exists(config_file):
         with open(config_file, 'r') as json_file:
@@ -420,7 +420,7 @@ def main():
             if "usedRoleDir2" in data.keys():
                 question_defaults['usedRoleDir2'] = data['usedRoleDir2']
 
-    questions = prepare_questions(folder_path, )
+    questions = prepare_questions(folder_path, additional_defaults=question_defaults)
     answers = prompt(questions)
     answers_pr = {}
     if answers['multipleRoles']:
@@ -434,8 +434,10 @@ def main():
         else:
             custom_pr_questions = pr_questions
         answers_pr = prompt(custom_pr_questions)
-        answers_pr['usedRoleDir'] += "/"
-        answers_pr['usedRoleDir2'] += "/"
+        if answers_pr['usedRoleDir'][-1] != '/':
+            answers_pr['usedRoleDir'] += "/"
+        if answers_pr['usedRoleDir2'][-1] != '/':
+            answers_pr['usedRoleDir2'] += "/"
     else:
         answers_pr['usedRoleDir'] = ""
         answers_pr['usedRoleDir2'] = ""
