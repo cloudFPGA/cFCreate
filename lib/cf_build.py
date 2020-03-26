@@ -316,7 +316,6 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
         for k in __SRA_config_keys__:
             if k in data.keys():
                 json_extend = True
-                print("found key " + k)
                 if k in additional_envs.keys():
                     additional_envs[k].extend(data[k])
                 else:
