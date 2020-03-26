@@ -19,7 +19,7 @@ import re
 from PyInquirer import prompt, print_json
 from pprint import pprint
 
-__version__ = 0.3
+__version__ = 0.4
 
 docstr="""cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
