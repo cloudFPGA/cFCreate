@@ -17,7 +17,7 @@ import re
 __cfp_json_path__ = "/../cFp.json"
 __env_file_name__ = "/this_machine_env.sh"
 
-__mandatory_keys__ = ['cFpMOD', 'usedRoleDir', 'usedRole2Dir', 'cFpSRAtype', 'roleName1', 'roleName2']
+__mandatory_keys__ = ['cFpMOD', 'usedRoleDir', 'usedRoleDir2', 'cFpSRAtype', 'roleName1', 'roleName2']
 __optional_keys__ = ['cFa', 'additional_lines']
 
 __match_regex__ = []
@@ -36,7 +36,7 @@ __match_regex__.append("##DIR1##")
 __replace_regex__.append("usedRoleDir")
 
 __match_regex__.append("##DIR2##")
-__replace_regex__.append("usedRole2Dir")
+__replace_regex__.append("usedRoleDir2")
 
 __match_regex__.append("##ROLE1##")
 __replace_regex__.append("roleName1")

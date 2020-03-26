@@ -90,7 +90,7 @@ default_questions = [
     },
     {
         'type': 'input',
-        'name': 'roleName',
+        'name': 'roleName1',
         'message': 'Name of the (first) Role (no spaces etc.):',
         'default': 'default',
         'filter': lambda val: val.split()[0]
@@ -150,7 +150,7 @@ __match_regex__.append("##DIR2##")
 __replace_regex__.append("usedRoleDir2")
 
 __match_regex__.append("##ROLE1##")
-__replace_regex__.append("roleName")
+__replace_regex__.append("roleName1")
 
 __match_regex__.append("##ROLE2##")
 __replace_regex__.append("roleName2")
@@ -266,8 +266,8 @@ def create_json(folder_path, envs):
     json_data['cFpMOD'] = envs['cf_mod']
     json_data['cFpSRAtype'] = envs['cf_sra']
     json_data['usedRoleDir'] = envs['usedRoleDir']
-    json_data['usedRole2Dir'] = envs['usedRoleDir2']
-    json_data['roleName1'] = envs['roleName']
+    json_data['usedRoleDir2'] = envs['usedRoleDir2']
+    json_data['roleName1'] = envs['roleName1']
     json_data['roleName2'] = envs['roleName2']
 
     with open("{}/cFp.json".format(folder_path), "w+") as json_file:
@@ -308,7 +308,7 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
         folder_path, envs['cf_sra']))
 
     json_extend = False
-    config_file = "{0}/cFDK/SRA/LIP/TOP/{1}/config.json".format(
+    config_file = "{0}/cFDK/SRA/LIB/TOP/{1}/config.json".format(
         folder_path, envs['cf_sra'])
     if os.path.exists(config_file):
         with open(config_file, 'r') as json_file:
@@ -316,6 +316,7 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
         for k in __SRA_config_keys__:
             if k in data.keys():
                 json_extend = True
+                print("found key " + k)
                 if k in additional_envs.keys():
                     additional_envs[k].extend(data[k])
                 else:
