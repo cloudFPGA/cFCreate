@@ -155,11 +155,18 @@ __replace_regex__.append("role_name_1")
 __match_regex__.append("##ROLE2##")
 __replace_regex__.append("role_name_2")
 
+__SRA_config_keys__ = []
+__SRA_config_keys__.append("additional_lines")
+
+__json_backup_keys__ = []
+__json_backup_keys__.append("additional_lines")
+
 
 def create_cfp_dir_structure(folder_path):
     os.system("mkdir -p {}/TOP/tcl".format(folder_path))
     os.system("mkdir -p {}/TOP/hdl".format(folder_path))
     os.system("mkdir -p {}/TOP/xdc".format(folder_path))
+    os.system("echo 'keep' > {}/TOP/xdc/.gitkeep".format(folder_path))
     os.system("mkdir -p {}/ROLE/".format(folder_path))
     os.system("mkdir -p {}/env/".format(folder_path))
 
@@ -281,10 +288,34 @@ def update_json(folder_path, new_entries=None, update_list=None):
         json.dump(data, json_file, indent=4)
 
 
-def copy_templates_and_set_env(folder_path, envs):
+def copy_templates_and_set_env(folder_path, envs, backup_json=False):
 
-    os.system("cp {0}/cFDK/MOD/{1}/hdl/top_{2}.vhdl.template {0}/TOP/hdl/top.vhdl".format(
-        folder_path, envs['cf_mod'], envs['cf_sra']))
+    additional_envs = {}
+    if backup_json:
+        json_path = "{}/cFp.json".format(folder_path)
+        if os.path.exists(json_path):
+            with open(json_path, 'r') as json_file:
+                data = json.load(json_file)
+            for k in __json_backup_keys__:
+                if k in data.keys():
+                    additional_envs[k] = data[k]
+
+    os.system("cp {0}/cFDK/SRA/LIB/TOP/{1}/top.vhdl {0}/TOP/hdl/top.vhdl".format(
+        folder_path, envs['cf_sra']))
+
+    json_extend = False
+    config_file = "{0}/cFDK/SRA/LIP/TOP{1}/config.json".format(
+        folder_path, envs['cf_sra'])
+    if os.path.exists(config_file):
+        with open(config_file, 'r') as json_file:
+            data = json.load(json_file)
+        for k in __SRA_config_keys__:
+            if k in data.keys():
+                json_extend = True
+                if k in additional_envs.keys():
+                    additional_envs[k].extend(data[k])
+                else:
+                    additional_envs[k] = data[k]
 
     # update tcl (Makefile only during create, just to not overwrite cFa's)
     os.system("cp -Rf {0}/cFDK/SRA/LIB/TOP/tcl/ {0}/TOP/".format(folder_path))
@@ -308,8 +339,9 @@ def copy_templates_and_set_env(folder_path, envs):
         outfile.write(out)
 
     create_json(folder_path, envs)
-
     os.system("chmod +x {}".format(env_file))
+    if json_extend or backup_json:
+        update_json(folder_path, update_list=additional_envs)
 
     return 0
 
@@ -387,7 +419,11 @@ def main():
     envs['abs_path'] = os.path.abspath(folder_path)
     # pprint(envs)
 
-    copy_templates_and_set_env(folder_path, envs)
+    backup_json = False
+    if arguments["update"]:
+        backup_json = True
+
+    copy_templates_and_set_env(folder_path, envs, backup_json=backup_json)
 
     if arguments['--git-init']:
         os.system("cd {}; git add .; git commit -m'cFp init by cFBuild'".format(folder_path))

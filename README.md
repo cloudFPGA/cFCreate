@@ -9,6 +9,8 @@ The cFBuild script has some python dependencies, hence we recommend the usage of
 
 **This python Virtual environment is only required for the execution of cFBuild, not for the build of the FPGA bistreams in a cFp!**
 
+However, `python3` is required to build cFp bitstreams.
+
 ### Setup your Virtualenv
 
 (we recommend the use of python3.5 or python3.6)
@@ -102,6 +104,9 @@ If the default Github URL is not accessible, an alternative can be specified wit
 In case of using cFDK from Github, this is initialized as git-submodule.
 To init the project as git repository can also be done manually, see the section [Git integration](#git-integration) below.
 
+**The use of `--git-init` is recommended!**
+
+
 ### 2. Update an existing cFp
 
 If it is necessary to regenerate the environment of the cFp (e.g. switch of SRA type or cFDK version,
@@ -193,6 +198,7 @@ $ git push origin master
 
 ### cFDK as git submodule
 
+*If not done automatically with the `--git-init` option*:
 It is recommended, to declare the cFDK folder as git submodule to the cFp git repository. 
 Therefore, execute the following:
 ```bash
@@ -233,14 +239,17 @@ $ git push
 
 Further information about git submodules can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
-*(This could also be done by `cFBuild` with the `--git-init` option.)*
+
+
+Middleware support
+--------------------
+
+As of the time being, if a Middleware is present or not is determined by the chosen SRA type. 
+If an SRA type with Middleware is selected, `cFBuild` will set all dependencies and environments automatically.
+
 
 
 Known Limitations/Bugs
 -----------------------
 
-* Currently, only the non-PR flow (i.e. `monolithic`) is supported. Hence, it is recommended to:
-  * create a cFp per Role
-  * The `<cFp-repo>/ROLE/` should contain only one Role. 
-  * Answer the question *Name of the (first) Role* with **`default`**.
-* SRA `MPIv0_x2Mp_x2Mc` is currently broken
+* Only one Middleware per SRA is supported. Hence, the current flexibility is: `Shell:Middleware:Role = 1:1:2`
