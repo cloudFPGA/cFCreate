@@ -90,7 +90,7 @@ default_questions = [
     },
     {
         'type': 'input',
-        'name': 'role_name_1',
+        'name': 'roleName',
         'message': 'Name of the (first) Role (no spaces etc.):',
         'default': 'default',
         'filter': lambda val: val.split()[0]
@@ -107,21 +107,21 @@ vivado_question = {
 pr_questions = [
     {
         'type': 'input',
-        'name': 'role_dir_1',
+        'name': 'usedRoleDir',
         'message': 'Directory name of the first Role (no spaces etc.):',
         'default': 'V1',
         'filter': lambda val: val.split()[0]
     },
     {
         'type': 'input',
-        'name': 'role_name_2',
+        'name': 'roleName2',
         'message': 'Name of the second Role (no spaces etc.):',
         'default': 'V2',
         'filter': lambda val: val.split()[0]
     },
     {
         'type': 'input',
-        'name': 'role_dir_2',
+        'name': 'usedRoleDir2',
         'message': 'Directory name of the second Role (no spaces etc.):',
         'default': 'V2',
         'filter': lambda val: val.split()[0]
@@ -144,16 +144,16 @@ __match_regex__.append("##SRA##")
 __replace_regex__.append("cf_sra")
 
 __match_regex__.append("##DIR1##")
-__replace_regex__.append("role_dir_1")
+__replace_regex__.append("usedRoleDir")
 
 __match_regex__.append("##DIR2##")
-__replace_regex__.append("role_dir_2")
+__replace_regex__.append("usedRoleDir2")
 
 __match_regex__.append("##ROLE1##")
-__replace_regex__.append("role_name_1")
+__replace_regex__.append("roleName")
 
 __match_regex__.append("##ROLE2##")
-__replace_regex__.append("role_name_2")
+__replace_regex__.append("roleName2")
 
 __SRA_config_keys__ = []
 __SRA_config_keys__.append("additional_lines")
@@ -214,7 +214,7 @@ def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False
     return "", 0
 
 
-def prepare_questions(folder_path):
+def prepare_questions(folder_path, additional_defaults=None):
     # check vivado path
     questions = []
     rc = os.system("vivado -version  > /dev/null 2>&1")
@@ -251,6 +251,10 @@ def prepare_questions(folder_path):
         if q['name'] == 'cf_sra':
             q['choices'] = sra_available
             q['default'] = sra_default  # TODO: default seems to be ignored...
+        if additional_defaults is not None:
+            for k in additional_defaults:
+                if q['name'] == k:
+                    q['default'] = additional_defaults[k]
         questions.append(q)
 
     return questions
@@ -261,10 +265,10 @@ def create_json(folder_path, envs):
     json_data['version'] = __version_string__
     json_data['cFpMOD'] = envs['cf_mod']
     json_data['cFpSRAtype'] = envs['cf_sra']
-    json_data['usedRoleDir'] = envs['role_dir_1']
-    json_data['usedRole2Dir'] = envs['role_dir_2']
-    json_data['roleName1'] = envs['role_name_1']
-    json_data['roleName2'] = envs['role_name_2']
+    json_data['usedRoleDir'] = envs['usedRoleDir']
+    json_data['usedRole2Dir'] = envs['usedRoleDir2']
+    json_data['roleName1'] = envs['roleName']
+    json_data['roleName2'] = envs['roleName2']
 
     with open("{}/cFp.json".format(folder_path), "w+") as json_file:
         json.dump(json_data, json_file, indent=4)
@@ -330,7 +334,7 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     os.system("cp ./lib/gen_env.py {}/env/".format(folder_path))
     os.system("cp ./lib/setenv.sh {}/env/".format(folder_path))
     os.system("chmod +x {}/env/setenv.sh".format(folder_path))
-    os.system("chmod +x {}/env/gen_env.sh".format(folder_path))
+    os.system("chmod +x {}/env/gen_env.py".format(folder_path))
 
     with open("./lib/machine_env.template", "r") as input, open(env_file, "w") as outfile:
         out = input.read()
@@ -400,17 +404,42 @@ def main():
         print(msg)
         exit(rc)
 
-    questions = prepare_questions(folder_path)
+    question_defaults = None
+    if arguments['update']:
+        json_path = "{}/cFp.json".format(folder_path)
+        if os.path.exists(json_path):
+            question_defaults = {}
+            with open(json_path, 'r') as json_file:
+                data = json.load(json_file)
+            if "roleName1" in data.keys():
+                question_defaults['roleName1'] = data['roleName1']
+            if "roleName2" in data.keys():
+                question_defaults['roleName2'] = data['roleName2']
+            if "usedRoleDir" in data.keys():
+                question_defaults['usedRoleDir'] = data['usedRoleDir']
+            if "usedRoleDir2" in data.keys():
+                question_defaults['usedRoleDir2'] = data['usedRoleDir2']
+
+    questions = prepare_questions(folder_path, )
     answers = prompt(questions)
     answers_pr = {}
     if answers['multipleRoles']:
-        answers_pr = prompt(pr_questions)
-        answers_pr['role_dir_1'] += "/"
-        answers_pr['role_dir_2'] += "/"
+        custom_pr_questions = []
+        if question_defaults is not None:
+            for q in pr_questions:
+                for k in question_defaults:
+                    if q['name'] == k:
+                        q['default'] = question_defaults[k]
+                custom_pr_questions.append(q)
+        else:
+            custom_pr_questions = pr_questions
+        answers_pr = prompt(custom_pr_questions)
+        answers_pr['usedRoleDir'] += "/"
+        answers_pr['usedRoleDir2'] += "/"
     else:
-        answers_pr['role_dir_1'] = ""
-        answers_pr['role_dir_2'] = ""
-        answers_pr['role_name_2'] = "unused"
+        answers_pr['usedRoleDir'] = ""
+        answers_pr['usedRoleDir2'] = ""
+        answers_pr['roleName2'] = "unused"
 
     envs = {**answers, **answers_pr}
     if 'xilinx_settings' not in envs:
