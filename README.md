@@ -34,6 +34,16 @@ $ pip3 install virtualenv
 $ exit
 ```
 
+And maybe also python-devel.
+For Centos or Redhat:
+```bash
+$ sudo yum install python3-devel.x86_64
+```
+For Ubuntu:
+```bash
+$ apt install python3.6-dev
+```
+
 Usage
 -----------
 ```bash
