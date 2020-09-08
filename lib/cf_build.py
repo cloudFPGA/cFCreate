@@ -128,11 +128,13 @@ pr_questions = [
     },
 ]
 
+__xilinx_cmd_key__ = "xilinx_cmd"
+
 __match_regex__ = []
 __replace_regex__ = []
 
 __match_regex__.append("##SOURCE_VIVADO##")
-__replace_regex__.append("xilinx_cmd")
+__replace_regex__.append(__xilinx_cmd_key__)
 
 __match_regex__.append("##ROOTDIR##")
 __replace_regex__.append("abs_path")
@@ -161,7 +163,6 @@ __SRA_config_keys__.append("additional_lines")  # must be at position 0!
 __json_backup_keys__ = []
 __json_backup_keys__.append("additional_lines")
 
-__xilinx_cmd_key__ = "xilinx_cmd"
 
 def create_cfp_dir_structure(folder_path):
     os.system("mkdir -p {}/TOP/tcl".format(folder_path))
@@ -325,11 +326,11 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
                     additional_envs[k] = data[k]
 
     # check for xilinx cmd
-    if __xilinx_cmd_key__ in envs:
-        if __SRA_config_keys__[0] not in additional_envs:
-            additional_envs[__SRA_config_keys__[0]] = []
-        additional_envs[__SRA_config_keys__[0]].extend(envs[__xilinx_cmd_key__])
-        json_extend = True
+    # if __xilinx_cmd_key__ in envs:
+    #     if __SRA_config_keys__[0] not in additional_envs:
+    #         additional_envs[__SRA_config_keys__[0]] = []
+    #     additional_envs[__SRA_config_keys__[0]].append(envs[__xilinx_cmd_key__])
+    #     json_extend = True
 
     # update tcl (Makefile only during create, just to not overwrite cFa's)
     os.system("cp -Rf {0}/cFDK/SRA/LIB/TOP/tcl/ {0}/TOP/".format(folder_path))
