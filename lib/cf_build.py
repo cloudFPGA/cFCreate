@@ -156,11 +156,12 @@ __match_regex__.append("##ROLE2##")
 __replace_regex__.append("roleName2")
 
 __SRA_config_keys__ = []
-__SRA_config_keys__.append("additional_lines")
+__SRA_config_keys__.append("additional_lines")  # must be at position 0!
 
 __json_backup_keys__ = []
 __json_backup_keys__.append("additional_lines")
 
+__xilinx_cmd_key__ = "xilinx_cmd"
 
 def create_cfp_dir_structure(folder_path):
     os.system("mkdir -p {}/TOP/tcl".format(folder_path))
@@ -323,6 +324,13 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
                 else:
                     additional_envs[k] = data[k]
 
+    # check for xilinx cmd
+    if __xilinx_cmd_key__ in envs:
+        if __SRA_config_keys__[0] not in additional_envs:
+            additional_envs[__SRA_config_keys__[0]] = []
+        additional_envs[__SRA_config_keys__[0]].extend(envs[__xilinx_cmd_key__])
+        json_extend = True
+
     # update tcl (Makefile only during create, just to not overwrite cFa's)
     os.system("cp -Rf {0}/cFDK/SRA/LIB/TOP/tcl/ {0}/TOP/".format(folder_path))
 
@@ -378,7 +386,8 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
     update_json_data = {}
     update_json_data['additional_lines'] = ['export {}Dir="$rootDir/{}/"'.format(addon_name.lower(), addon_name)]
     update_json_data['cFa'] = [str(addon_name)]
-    update_json(folder_path, update_json_data)
+    # update_json(folder_path, update_json_data)
+    update_json(folder_path, update_list=update_json_data)
 
 
     # commit changes if it is a git
@@ -446,10 +455,12 @@ def main():
         answers_pr['roleName2'] = "unused"
 
     envs = {**answers, **answers_pr}
-    if 'xilinx_settings' not in envs:
-        envs['xilinx_cmd'] = ""
-    else:
-        envs['xilinx_cmd'] = "source " + envs['xilinx_settings'] + "\n"
+    # if 'xilinx_settings' not in envs:
+    #     envs['xilinx_cmd'] = ""
+    # else:
+    if 'xilinx_settings' in envs:
+        # envs['xilinx_cmd'] = "source " + envs['xilinx_settings'] + "\n"
+        envs[__xilinx_cmd_key__] = "source " + envs['xilinx_settings'] + "\n"
     envs['abs_path'] = os.path.abspath(folder_path)
     # pprint(envs)
 
