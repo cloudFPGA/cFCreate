@@ -121,9 +121,19 @@ To init the project as git repository can also be done manually, see the section
 
 If it is necessary to regenerate the environment of the cFp (e.g. switch of SRA type or cFDK version,
  **or after a fresh clone of an existing cFp**), run:
+ 
+in the existing cFp path:
+```bash
+$ git submodule init
+$ git submodule update
+```
+before you then run:
 ```bash
 ./cFBuild update <path-to-project-folder> 
 ```
+You have to answer a few questions to regenerate the environment. 
+For example the path to the Xilinx environment which is in case of our ZYC2 VM 
+`/tools/Xilinx/Vivado/2017.4/`
 
 ### 3. Add a cloudFPGA addon (cFa) to an existing cFp
 
