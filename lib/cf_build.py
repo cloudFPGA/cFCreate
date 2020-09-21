@@ -19,7 +19,7 @@ import re
 from PyInquirer import prompt, print_json
 from pprint import pprint
 
-__version__ = 0.4
+__version__ = 0.6
 
 docstr="""cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
@@ -456,10 +456,9 @@ def main():
         answers_pr['roleName2'] = "unused"
 
     envs = {**answers, **answers_pr}
-    # if 'xilinx_settings' not in envs:
-    #     envs['xilinx_cmd'] = ""
-    # else:
-    if 'xilinx_settings' in envs:
+    if 'xilinx_settings' not in envs:
+        envs[__xilinx_cmd_key__] = ""
+    else:
         # envs['xilinx_cmd'] = "source " + envs['xilinx_settings'] + "\n"
         envs[__xilinx_cmd_key__] = "source " + envs['xilinx_settings'] + "\n"
     envs['abs_path'] = os.path.abspath(folder_path)
