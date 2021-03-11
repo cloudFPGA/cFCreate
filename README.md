@@ -192,7 +192,7 @@ $ make monolithic
 # or 
 $ make pr
 ```
-
+If synthesis fails without an error retry the `make monolithic` or open the project with `Vivado` and start synthesis there.
 Resulting bitfiles are in `./dcps/`.
 
 Git integration
