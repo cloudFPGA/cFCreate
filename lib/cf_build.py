@@ -19,7 +19,7 @@ import re
 from PyInquirer import prompt, print_json
 from pprint import pprint
 
-__version__ = 0.6
+__version__ = 0.7
 
 docstr="""cloudFPGA Build Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
@@ -27,6 +27,7 @@ cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Devel
 Usage: 
     cFBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
     cFBuild update  <path-to-project-folder>
+    cFBuild upgrade (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] <path-to-project-folder>
     cFBuild adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
     
     cFBuild -h|--help
@@ -35,6 +36,7 @@ Usage:
 Commands:
     new             Creates a new cFp based on the given cFDK
     update          Update the environment setting of an existing cFp
+    upgrade         Upgrades the cFDK and the environment setting an existing cFp
     adorn           Installs a cloudFPGA addon (cFa) to an existing cFp
 
 Options:
@@ -50,11 +52,10 @@ Options:
     --cfa-zip=<path-to-zip>     Path to a cFa zip folder
 
 Copyright IBM Research, All Rights Reserved.
-Contact: {ngl,fab,wei}@zurich.ibm.com
+Contact: {ngl,fab,wei, did}@zurich.ibm.com
 """
 
-cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"
-#cfdk_url = "https://github.ibm.com/cloudFPGA/cFDK.git"
+config_default_cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"
 
 DEFAULT_MOD = "FMKU60"
 DEFAULT_SRA = "Themisto"
@@ -173,22 +174,14 @@ def create_cfp_dir_structure(folder_path):
     os.system("mkdir -p {}/env/".format(folder_path))
 
 
-def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False):
-    if cfdk_tag is None and cfdk_zip is None:
-        return "ERROR: Missing manadtory arguments", -2
-
-    os.system("mkdir -p {}".format(folder_path))
-
-    if git_init:
-        os.system("git init {}".format(folder_path))
-
+def checkout_cfdk(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False):
     if cfdk_zip is not None:
         rc = os.system("unzip {} -d {}".format(cfdk_zip, folder_path))
         if rc != 0:
             return "ERROR: Failed to unzip cFDK", -1
     else:  # use git
         if git_url is None:
-            git_url=cfdk_url
+            git_url = config_default_cfdk_url
 
         tag_str = ""
         git_checkout_version = False
@@ -206,6 +199,21 @@ def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False
             rc = os.system("git clone {} --single-branch --depth 1 {} {}/cFDK/".format(tag_str, git_url, folder_path))
             if rc != 0:
                 return "ERROR: Failed to checkout cFDK", -1
+    return "", 0
+
+
+def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False):
+    if cfdk_tag is None and cfdk_zip is None:
+        return "ERROR: Missing mandatory arguments", -2
+
+    os.system("mkdir -p {}".format(folder_path))
+
+    if git_init:
+        os.system("git init {}".format(folder_path))
+
+    msg, rc = checkout_cfdk(cfdk_tag, cfdk_zip, folder_path, git_url, git_init)
+    if rc != 0:
+        return msg, rc
 
     create_cfp_dir_structure(folder_path)
 
@@ -213,6 +221,43 @@ def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False
     os.system("cp ./lib/gitignore.template {0}/.gitignore".format(folder_path))
     os.system("cp {0}/cFDK/SRA/LIB/TOP/Makefile.template {0}/Makefile".format(folder_path))
 
+    return "", 0
+
+
+def upgrade_existing_cfdk(cfdk_tag, cfdk_zip, folder_path, git_url=None):
+    if cfdk_tag is None and cfdk_zip is None:
+        return "ERROR: Missing mandatory arguments", -2
+
+    folder_abspath = os.path.abspath(folder_path)
+    use_git_flow = False
+    if os.path.isdir("{}/.git".format(folder_abspath)):
+        use_git_flow = True
+
+    # cleanup old cFDK
+    if use_git_flow:
+        rc = os.system("cd {}; git config -f .git/config --remove-section submodule.cFDK".format(folder_abspath))
+        if rc != 0:
+            return "ERROR: Failed to remove old cFDK submodule", -1
+        rc = os.system("cd {}; git config -f .gitmodules --remove-section submodule.cFDK".format(folder_abspath))
+        if rc != 0:
+            return "ERROR: Failed to remove old cFDK submodule", -1
+        rc = os.system("cd {}; git rm --cached cFDK".format(folder_abspath))
+        if rc != 0:
+            return "ERROR: Failed to remove old cFDK submodule", -1
+        rc = os.system("cd {}; rm -rf .git/modules/cFDK".format(folder_abspath))
+        if rc != 0:
+            return "ERROR: Failed to remove old cFDK submodule", -1
+    # in all cases
+    rc = os.system("cd {}; rm -rf cFDK".format(folder_abspath))
+    if rc != 0:
+        return "ERROR: Failed to remove old cFDK folder", -1
+
+    msg, rc = checkout_cfdk(cfdk_tag, cfdk_zip, folder_path, git_url, git_init=use_git_flow)
+    if rc != 0:
+        return msg, rc
+
+    if use_git_flow:
+        os.system("cd {}; git commit -m'[cFBuild] clean-up and upgrade of cFDK'".format(folder_abspath))
     return "", 0
 
 
@@ -406,6 +451,7 @@ def main():
     #    # to remove / to prevent //
     #    folder_path = folder_path[:-1]
 
+    also_do_update = False
     if arguments['new']:
         msg, rc = create_new_cfp(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path, git_url=arguments['--git-url'], git_init=arguments['--git-init'])
         if rc != 0:
@@ -415,9 +461,15 @@ def main():
         msg, rc = install_cfa(folder_path, arguments['<folder-name-for-addon>'], git_url=arguments['--cfa-repo'], zip_path=arguments['--cfa-zip'])
         print(msg)
         exit(rc)
+    elif arguments['upgrade']:
+        msg, rc = upgrade_existing_cfdk(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path, git_url=arguments['--git-url'])
+        if rc != 0:
+            print(msg)
+            exit(1)
+        also_do_update = True
 
     question_defaults = None
-    if arguments['update']:
+    if arguments['update'] or also_do_update:
         json_path = "{}/cFp.json".format(folder_path)
         if os.path.exists(json_path):
             question_defaults = {}
