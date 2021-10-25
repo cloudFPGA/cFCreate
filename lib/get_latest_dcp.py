@@ -69,13 +69,13 @@ def main():
     cfp_json_file = me_abs + __cfp_json_path__
     debugging_flow = os.environ.get('CFP_DEBUGGING')
     if debugging_flow is not None:
-        cfp_json_file = me_abs + '/../../cFp/cFp_Triangle/cFp.json'
+        cfp_json_file = me_abs + debugging_flow +'/cFp.json'
     with open(cfp_json_file, 'r') as json_file:
         cFp_data = json.load(json_file)
 
     root_abs = os.path.realpath(me_abs+"/../")
     if debugging_flow is not None:
-        root_abs = os.path.realpath(me_abs + "/../../cFp/cFp_Triangle/env/" + "/../")
+        root_abs = os.path.realpath(me_abs + debugging_flow + "/env/" + "/../")
     cFp_data['abs_path'] = root_abs
 
     shell_type = cFp_data[__shell_type_key__]
