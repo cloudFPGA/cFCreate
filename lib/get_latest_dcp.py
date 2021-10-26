@@ -123,6 +123,23 @@ def main():
         print("ERROR: Failed to download latest dcp ({}). STOP.".format(err_msg))
         exit(1)
 
+    try:
+        r3 = requests.get("http://"+cfrm_url+"/composablelogic/"+str(latest_shell_id)
+                          +"/meta?username={0}&password={1}".format(__openstack_user__, __openstack_pw__))
+    except Exception as e:
+        print(str(e))
+        requests_error = True
+
+    if requests_error or r3.status_code != 200:
+        print("ERROR: Failed to connect to CFRM ({}). STOP.".format(r1.status_code))
+        exit(1)
+
+    dcp_meta = json.loads(r3.text)
+    meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])
+    target_meta_name = os.path.abspath(dcps_folder + "/" + meta_file_name)
+    with open(target_meta_name, 'w') as outfile:
+        json.dump(dcp_meta, outfile)
+
     print("[cFBuild] Updated dcp of Shell '{}' to latest version ({}) successfully.\n\t(downloaded dcp to {})"
           .format(shell_type, latest_shell_id, target_file_name))
 
