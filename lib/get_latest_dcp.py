@@ -1,5 +1,5 @@
 # /*******************************************************************************
-#  * Copyright 2016 -- 2020 IBM Corporation
+#  * Copyright 2016 -- 2021 IBM Corporation
 #  *
 #  * Licensed under the Apache License, Version 2.0 (the "License");
 #  * you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ def main():
     cfp_json_file = me_abs + __cfp_json_path__
     debugging_flow = os.environ.get('CFP_DEBUGGING')
     if debugging_flow is not None:
-        cfp_json_file = me_abs + debugging_flow +'/cFp.json'
+        cfp_json_file = me_abs + debugging_flow + '/cFp.json'
     with open(cfp_json_file, 'r') as json_file:
         cFp_data = json.load(json_file)
 
@@ -140,6 +140,7 @@ def main():
                   .format(target_file_name, latest_shell_id))
             exit(0)
 
+    # 4. download if new version available
     download_url = "http://"+cfrm_url+"/composablelogic/"+str(latest_shell_id)+"/dcp" + \
                    "?username={0}&password={1}".format(__openstack_user__, __openstack_pw__)
     err_msg = ""
@@ -151,7 +152,6 @@ def main():
         with open(target_file_name, 'wb') as f:
             for chunk in r2.iter_content(chunk_size=8192):
                 f.write(chunk)
-
     if requests_error:
         print("ERROR: Failed to download latest dcp ({}). STOP.".format(err_msg))
         exit(1)
@@ -161,6 +161,7 @@ def main():
 
     print("[cFBuild] Updated dcp of Shell '{}' to latest version ({}) successfully. DONE.\n\t(downloaded dcp to {})"
           .format(shell_type, latest_shell_id, target_file_name))
+    return
 
 
 if __name__ == '__main__':
