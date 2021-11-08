@@ -22,8 +22,8 @@
 #  *     Authors: FAB, WEI, NGL
 #  *
 #  *     Description:
-#  *       Bash script to invoke the cFBuild framework
+#  *       Bash script to invoke the cFCreate framework
 #  *
 
 source cfenv/bin/activate
-python3 ./lib/cf_build.py "$@"
+python3 ./lib/cf_create.py "$@"

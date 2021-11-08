@@ -36,17 +36,17 @@ from pprint import pprint
 
 __version__ = 0.7
 
-docstr="""cloudFPGA Build Framework
+docstr="""cloudFPGA Project Management Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
-    cFBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
-    cFBuild update  <path-to-project-folder>
-    cFBuild upgrade (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] <path-to-project-folder>
-    cFBuild adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
+    cFCreate new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
+    cFCreate update  <path-to-project-folder>
+    cFCreate upgrade (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] <path-to-project-folder>
+    cFCreate adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
     
-    cFBuild -h|--help
-    cFBuild -v|--version
+    cFCreate -h|--help
+    cFCreate -v|--version
 
 Commands:
     new             Creates a new cFp based on the given cFDK
@@ -75,7 +75,7 @@ config_default_cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"
 DEFAULT_MOD = "FMKU60"
 DEFAULT_SRA = "Themisto"
 __env_file_name__ = "this_machine_env.sh"
-__version_string__ = "This cFp was created by cFBuild " + str(__version__)
+__version_string__ = "This cFp was created by cFCreate " + str(__version__)
 
 default_questions = [
     {
@@ -272,7 +272,7 @@ def upgrade_existing_cfdk(cfdk_tag, cfdk_zip, folder_path, git_url=None):
         return msg, rc
 
     if use_git_flow:
-        os.system("cd {}; git commit -m'[cFBuild] clean-up and upgrade of cFDK'".format(folder_abspath))
+        os.system("cd {}; git commit -m'[cFCreate] clean-up and upgrade of cFDK'".format(folder_abspath))
     return "", 0
 
 
@@ -538,7 +538,7 @@ def main():
     copy_templates_and_set_env(folder_path, envs, backup_json=backup_json)
 
     if arguments['--git-init']:
-        os.system("cd {}; git add .; git commit -m'cFp init by cFBuild'".format(folder_path))
+        os.system("cd {}; git add .; git commit -m'cFp init by cFCreate'".format(folder_path))
         print("To complete the git repository initialization execute: \n" +
               "\t$ git remote add origin <remote-repository-URL>\n" +
               "\t$ git push origin master\n")

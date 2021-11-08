@@ -1,27 +1,27 @@
-cFBuild
+cFCreate
 ==============
-**cloudFPGA Build Framework**
+**Framework for creating and updating cloudFPGA projects**
 
 
 Requirements
 -------------
-The cFBuild script has some python dependencies, hence we recommend the usage of virtualenvs. 
+The cFCreate script has some python dependencies, hence we recommend the usage of virtualenvs. 
 
-**This python Virtual environment is only required for the execution of cFBuild, not for the build of the FPGA bistreams in a cFp!**
+**This python Virtual environment is only required for the execution of cFCreate, not for the build of the FPGA bistreams in a cFp!**
 
 However, `python3` is required to build cFp bitstreams.
 
 ### Setup your Virtualenv
 
-(we recommend the use of python3.5 or python3.6)
+(we recommend the use of python3.8)
 
-If you received this repository as Zip-folder, extract it into `<your-path>/cFBuild`. Otherwise clone this repositroy into `<your-path/cFBuild`. 
+If you received this repository as Zip-folder, extract it into `<your-path>/cFCreate`. Otherwise clone this repositroy into `<your-path/cFCreate`. 
 
 ```bash
 $ cd <your-path>/cFBuid/
-$ which python3.6
-/usr/bin/python3.6
-$ virtualenv -p /usr/bin/python3.6 cfenv
+$ which python3.8
+/usr/bin/python3.8
+$ virtualenv -p /usr/bin/python3.8 cfenv
 $ source cfenv/bin/activate
 $ pip install -r requirements.txt
 ```
@@ -29,7 +29,7 @@ $ pip install -r requirements.txt
 You may have to install `pip` and `virtualenv` first: 
 ```bash
 $ sudo su
-$ /usr/bin/python3.6 -m ensurepip
+$ /usr/bin/python3.8-m ensurepip
 $ pip3 install virtualenv
 $ exit
 ```
@@ -41,23 +41,23 @@ $ sudo yum install python3-devel.x86_64
 ```
 For Ubuntu:
 ```bash
-$ apt install python3.6-dev
+$ apt install python3.8-dev
 ```
 
 Usage
 -----------
 ```bash
-$ ./cFBuild -h
-cloudFPGA Build Framework
-cFBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
+$ ./cFCreate -h
+cloudFPGA Project Management Framework
+cFCreate creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
-    cFBuild new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
-    cFBuild update  <path-to-project-folder>
-    cFBuild adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
+    cFCreate new (--cfdk-version=<cfdkv> | --cfdk-zip=<path-to-zip>)  [--git-url=<git-url>] [--git-init] <path-to-project-folder>
+    cFCreate update  <path-to-project-folder>
+    cFCreate adorn (--cfa-repo=<cfagit> | --cfa-zip=<path-to-zip>) <folder-name-for-addon> <path-to-project-folder>
     
-    cFBuild -h|--help
-    cFBuild -v|--version
+    cFCreate -h|--help
+    cFCreate -v|--version
 
 Commands:
     new             Creates a new cFp based on the given cFDK
@@ -93,19 +93,19 @@ If *'a zip folder'* is mentioned, a zip-file provided by the cloudFPGA team is m
 
 ### 1. Create new cloudFPGA project (cFp)
 
-To create a new cFp, use the `cFBuild` command:
+To create a new cFp, use the `cFCreate` command:
 
 **The script will ask for the type of SRA or cF module --> see cFDK documentation.**
 The `project-folder` should not exist (yet) or must be empty.
 
 1. New cFp with a cFDK-zip
 ```bash
-./cFBuild new --cfdk-zip=./<path>/cFDK-v0.1.zip <path-to-project-folder>
+./cFCreate new --cfdk-zip=./<path>/cFDK-v0.1.zip <path-to-project-folder>
 ```
 2. New cFp using cFDK from Github
 
 ```bash
-./cFBuild new --cfdk-version=v0.1 <path-to-project-folder>
+./cFCreate new --cfdk-version=v0.1 <path-to-project-folder>
 ```
 
 If the default Github URL is not accessible, an alternative can be specified with `-git-url`.
@@ -129,7 +129,7 @@ $ git submodule update
 ```
 before you then run:
 ```bash
-./cFBuild update <path-to-project-folder> 
+./cFCreate update <path-to-project-folder> 
 ```
 You have to answer a few questions to regenerate the environment. 
 For example the path to the Xilinx environment which is in case of our ZYC2 VM 
@@ -142,18 +142,18 @@ There are again two ways to install them to an existing cFp:
 
 1. Using an existing git repository:
 ```bash
-./cFBuild adorn --cfa-repo=<cfagit> <folder-name-for-addon> <path-to-project-folder>
+./cFCreate adorn --cfa-repo=<cfagit> <folder-name-for-addon> <path-to-project-folder>
 ```
 2. Using a cFa-zip
 ```bash
-./cFBuild adorn --cfa-zip=<path-to-zip> <folder-name-for-addon>  <path-to-project-folder>
+./cFCreate adorn --cfa-zip=<path-to-zip> <folder-name-for-addon>  <path-to-project-folder>
 ```
 
 The `<folder-name-for-addon>` will be the name of the folder that will be created in `<path-to-project-folder>` for the new cFa.
 
 
-If the cFp is a git-repository, all changes will be commited by `cFBuild` (maybe check the output for error messages).
-It is *not* necessary to run `cFBuild update` afterwards on any machine.
+If the cFp is a git-repository, all changes will be commited by `cFCreate` (maybe check the output for error messages).
+It is *not* necessary to run `cFCreate update` afterwards on any machine.
 
 
 Structure of a cFp
@@ -214,7 +214,7 @@ $ git remote add origin <remote-repository-URL>
 $ git push origin master
 ```
 
-*(This could also be done by `cFBuild` with the `--git-init` option.)*
+*(This could also be done by `cFCreate` with the `--git-init` option.)*
 
 ### cFDK as git submodule
 
@@ -265,7 +265,7 @@ Middleware support
 --------------------
 
 As of the time being, if a Middleware is present or not is determined by the chosen SRA type. 
-If an SRA type with Middleware is selected, `cFBuild` will set all dependencies and environments automatically.
+If an SRA type with Middleware is selected, `cFCreate` will set all dependencies and environments automatically.
 
 
 
