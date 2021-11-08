@@ -96,8 +96,11 @@ def main(new_bin_file_name):
     with open(target_meta_name, 'r') as meta_file:
         cur_meta = json.load(meta_file)
     current_cl_cert = cur_meta['cert']
-    cl_id = cur_meta['id']
-    new_sig['cl_id'] = cl_id
+    pl_id = cur_meta['id']
+    # for Mantles
+    if 'pl_id' in cur_meta:
+        pl_id = cur_meta['pl_id']
+    new_sig['pl_id'] = pl_id
 
     # crete new cert
     dcp_hash = get_file_hash(target_file_name)

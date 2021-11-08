@@ -105,6 +105,9 @@ def main():
             cur_meta = json.load(meta_file)
         current_cert = cur_meta['cert']
         current_id = cur_meta['id']
+        # for Mantles
+        if 'pl_id' in cur_meta:
+            current_id = cur_meta['pl_id']
 
     requests_error = False
     try:
