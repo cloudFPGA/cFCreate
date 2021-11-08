@@ -29,8 +29,9 @@ import os
 import json
 import hashlib
 
-# 'hardcoded' version numbers
-__THIS_FILE_VERSION_NUMBER__ = 1
+# 'hardcoded' version strings
+__THIS_FILE_VERSION_NUMBER__ = 3
+__THIS_FILE_VERSION_STRING__ = "0.0.3"
 __THIS_FILE_ALGORITHM_VERSION = 'hc1'  # hash concat version 1
 
 __cfp_json_path__ = '/../cFp.json'
@@ -38,6 +39,8 @@ __shell_type_key__ = 'cFpSRAtype'
 __mod_type_key__ = 'cFpMOD'
 __dcps_folder_name__ = '/dcps/'
 __sig_file_ending__ = 'sig'
+__ignore_key__ = 'ignore'
+__ignore_hash__ = '719a965d6d8936f09550efb75bcf4bff9f956143d9f78e30b62b966b6a9ebc35'  # echo -n 'ignore verify' | sha256sum
 
 
 def get_file_hash(file_path):
@@ -51,17 +54,17 @@ def get_file_hash(file_path):
     return sha256_hash.hexdigest()
 
 
-def get_sig_string(dcp_hash, my_hash, current_cl_cert, new_pr_hash, debugging_flow=None):
+def get_sig_string(dcp_hash, my_hash, current_cl_cert, new_pr_hash, rpt_hash, debugging_flow=None):
     # check right version
     assert __THIS_FILE_ALGORITHM_VERSION == 'hc1'
-    new_cert_string = str(dcp_hash) + str(my_hash) + str(current_cl_cert) + str(new_pr_hash)
+    new_cert_string = str(dcp_hash) + str(my_hash) + str(current_cl_cert) + str(new_pr_hash) + str(rpt_hash)
     cert = hashlib.sha384(new_cert_string.encode('utf-8')).hexdigest()
     if debugging_flow is not None:
         print("\tnew_cert_string: {}".format(new_cert_string))
     return cert
 
 
-def main(new_bin_file_name):
+def main(new_bin_file_name, pr_verify_rpt_file_name):
     # we print only on error
     me_abs_dir = os.path.dirname(os.path.realpath(__file__))
     me_abs_file = os.path.abspath(os.path.realpath(__file__))
@@ -88,6 +91,18 @@ def main(new_bin_file_name):
     if not os.path.isfile(new_bin_file_path):
         print("[cFBuild] ERROR: {} is not a file. STOP.".format(new_bin_file_path))
         exit(1)
+    ignore_pr_verify = False
+    if pr_verify_rpt_file_name == __ignore_key__:
+        ignore_pr_verify = True
+    if not ignore_pr_verify:
+        pr_verify_rpt_file_path = os.path.abspath(dcps_folder + '/' + pr_verify_rpt_file_name)
+        if not os.path.isfile(pr_verify_rpt_file_path):
+            print("[cFBuild] ERROR: {} is not a file. STOP.".format(pr_verify_rpt_file_path))
+            exit(1)
+        rpt_file_lines = []
+        with open(pr_verify_rpt_file_path) as rpt_in:
+            for line in rpt_in:
+                rpt_file_lines.append(line.rstrip())
 
     sig_file_path = os.path.abspath(new_bin_file_path + '.' + __sig_file_ending__)
     new_sig = {'build_id': __THIS_FILE_VERSION_NUMBER__, 'algorithm': __THIS_FILE_ALGORITHM_VERSION,
@@ -106,13 +121,31 @@ def main(new_bin_file_name):
     dcp_hash = get_file_hash(target_file_name)
     my_hash = get_file_hash(me_abs_file)
     new_pr_hash = get_file_hash(new_bin_file_path)
+    if not ignore_pr_verify:
+        rpt_hash = get_file_hash(pr_verify_rpt_file_path)
+    else:
+        rpt_hash = __ignore_hash__
 
     if debugging_flow is not None:
+        print("\tdcp hash: {}".format(dcp_hash))
+        print("\trpt hash: {}".format(rpt_hash))
         print("\tmy hash: {}".format(my_hash))
         print("\tsig_file_path: {}".format(sig_file_path))
 
-    new_sig['sig'] = get_sig_string(dcp_hash, my_hash, current_cl_cert, new_pr_hash, debugging_flow=debugging_flow)
+    new_sig['sig'] = get_sig_string(dcp_hash, my_hash, current_cl_cert, new_pr_hash, rpt_hash,
+                                    debugging_flow=debugging_flow)
     new_sig['hash'] = new_pr_hash  # to check for transport errors first?
+
+    if not ignore_pr_verify:
+        rpt_sum_line = rpt_file_lines[-1]
+        new_sig['verify_rpt'] = rpt_sum_line
+        if dcp_file_name in rpt_sum_line:
+            new_sig['verify'] = 'OK'
+        else:
+            new_sig['verify'] = 'NOK'
+    else:
+        new_sig['verify_rpt'] = __ignore_key__
+        new_sig['verify'] = 'OK'
 
     with open(sig_file_path, 'w') as outfile:
         json.dump(new_sig, outfile)
@@ -122,9 +155,9 @@ def main(new_bin_file_name):
 
 if __name__ == '__main__':
     # we print only on error
-    if len(sys.argv) != 2:
-        print('ERROR: Usage is {} <new-bin-file-name>. STOP'.format(sys.argv[0]))
+    if len(sys.argv) != 3:
+        print('ERROR: Usage is {} <new-bin-file-name> <pr-verify-rpt-file-name>. STOP'.format(sys.argv[0]))
         exit(1)
-    main(sys.argv[1])
+    main(sys.argv[1], sys.argv[2])
     exit(0)
 
