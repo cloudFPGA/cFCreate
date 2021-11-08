@@ -73,13 +73,21 @@ def main():
     with open(cfp_json_file, 'r') as json_file:
         cFp_data = json.load(json_file)
 
+    # 1. check folders and file names
     root_abs = os.path.realpath(me_abs+"/../")
     if debugging_flow is not None:
         root_abs = os.path.realpath(me_abs + debugging_flow + "/env/" + "/../")
     cFp_data['abs_path'] = root_abs
+    dcps_folder = root_abs + __dcps_folder_name__
+    os.system("mkdir -p {}".format(dcps_folder))
+    dcp_file_name = "3_top{}_STATIC.dcp".format(cFp_data[__mod_type_key__])
+    target_file_name = os.path.abspath(dcps_folder + "/" + dcp_file_name)
+    meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])
+    target_meta_name = os.path.abspath(dcps_folder + "/" + meta_file_name)
 
     shell_type = cFp_data[__shell_type_key__]
 
+    # 2. check credentials
     if load_user_credentials(root_abs) == -1:
         print("Please save your (escaped) OpenStack credentials in {}/{}".format(root_abs, __credentials_file_name__))
         exit(1)
@@ -88,6 +96,16 @@ def main():
     if debugging_flow is not None:
         cfrm_url = "localhost:8080"
 
+    # 3. check if version and cert is still the same
+    current_id = -1
+    current_cert = '-1'
+    # check if both, dcp and meta exists
+    if os.path.isfile(target_meta_name) and os.path.isfile(target_file_name):
+        with open(target_meta_name, 'r') as meta_file:
+            cur_meta = json.load(meta_file)
+        current_cert = cur_meta['cert']
+        current_id = cur_meta['id']
+
     requests_error = False
     try:
         r1 = requests.get("http://"+cfrm_url+"/composablelogic/by_shell/"+str(shell_type)
@@ -95,7 +113,6 @@ def main():
     except Exception as e:
         print(str(e))
         requests_error = True
-
     if requests_error or r1.status_code != 200:
         print("ERROR: Failed to connect to CFRM ({}). STOP.".format(r1.status_code))
         exit(1)
@@ -103,10 +120,26 @@ def main():
     r1_list = json.loads(r1.text)
     latest_shell_id = r1_list[-1]['id']
 
-    dcps_folder = root_abs + __dcps_folder_name__
-    os.system("mkdir -p {}".format(dcps_folder))
-    dcp_file_name = "3_top{}_STATIC.dcp".format(cFp_data[__mod_type_key__])
-    target_file_name = os.path.abspath(dcps_folder + "/" + dcp_file_name)
+    # get meta
+    try:
+        r3 = requests.get("http://"+cfrm_url+"/composablelogic/"+str(latest_shell_id)
+                          +"/meta?username={0}&password={1}".format(__openstack_user__, __openstack_pw__))
+    except Exception as e:
+        print(str(e))
+        requests_error = True
+    if requests_error or r3.status_code != 200:
+        print("ERROR: Failed to connect to CFRM ({}). STOP.".format(r1.status_code))
+        exit(1)
+
+    dcp_meta = json.loads(r3.text)
+
+    if latest_shell_id == current_id:
+        # check for cert
+        if dcp_meta['cert'] == current_cert:
+            print('[cFBuild] Current dcp (path: {}; id: {}) is up to date. DONE.'
+                  .format(target_file_name, latest_shell_id))
+            exit(0)
+
     download_url = "http://"+cfrm_url+"/composablelogic/"+str(latest_shell_id)+"/dcp" + \
                    "?username={0}&password={1}".format(__openstack_user__, __openstack_pw__)
     err_msg = ""
@@ -123,24 +156,10 @@ def main():
         print("ERROR: Failed to download latest dcp ({}). STOP.".format(err_msg))
         exit(1)
 
-    try:
-        r3 = requests.get("http://"+cfrm_url+"/composablelogic/"+str(latest_shell_id)
-                          +"/meta?username={0}&password={1}".format(__openstack_user__, __openstack_pw__))
-    except Exception as e:
-        print(str(e))
-        requests_error = True
-
-    if requests_error or r3.status_code != 200:
-        print("ERROR: Failed to connect to CFRM ({}). STOP.".format(r1.status_code))
-        exit(1)
-
-    dcp_meta = json.loads(r3.text)
-    meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])
-    target_meta_name = os.path.abspath(dcps_folder + "/" + meta_file_name)
     with open(target_meta_name, 'w') as outfile:
         json.dump(dcp_meta, outfile)
 
-    print("[cFBuild] Updated dcp of Shell '{}' to latest version ({}) successfully.\n\t(downloaded dcp to {})"
+    print("[cFBuild] Updated dcp of Shell '{}' to latest version ({}) successfully. DONE.\n\t(downloaded dcp to {})"
           .format(shell_type, latest_shell_id, target_file_name))
 
 
