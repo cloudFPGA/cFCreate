@@ -54,6 +54,13 @@ def get_file_hash(file_path):
     return sha256_hash.hexdigest()
 
 
+def get_string_hash(inp_string):
+    # check right version
+    assert __THIS_FILE_ALGORITHM_VERSION == 'hc1'
+    sha256_hash = hashlib.sha256(inp_string.encode('utf-8'))
+    return sha256_hash.hexdigest()
+
+
 def get_sig_string(dcp_hash, my_hash, current_cl_cert, new_pr_hash, rpt_hash, debugging_flow=None):
     # check right version
     assert __THIS_FILE_ALGORITHM_VERSION == 'hc1'
@@ -103,6 +110,7 @@ def main(new_bin_file_name, pr_verify_rpt_file_name):
         with open(pr_verify_rpt_file_path) as rpt_in:
             for line in rpt_in:
                 rpt_file_lines.append(line.rstrip())
+        pr_verify_str = ''.join(rpt_file_lines)
 
     sig_file_path = os.path.abspath(new_bin_file_path + '.' + __sig_file_ending__)
     new_sig = {'build_id': __THIS_FILE_VERSION_NUMBER__, 'algorithm': __THIS_FILE_ALGORITHM_VERSION,
@@ -122,7 +130,8 @@ def main(new_bin_file_name, pr_verify_rpt_file_name):
     my_hash = get_file_hash(me_abs_file)
     new_pr_hash = get_file_hash(new_bin_file_path)
     if not ignore_pr_verify:
-        rpt_hash = get_file_hash(pr_verify_rpt_file_path)
+        # rpt_hash = get_file_hash(pr_verify_rpt_file_path) # not file!
+        rpt_hash = get_string_hash(pr_verify_str)
     else:
         rpt_hash = __ignore_hash__
 
