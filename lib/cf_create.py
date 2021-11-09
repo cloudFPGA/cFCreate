@@ -71,6 +71,7 @@ Contact: {ngl,fab,wei, did}@zurich.ibm.com
 """
 
 config_default_cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"
+config_template_folder = './templates'
 
 DEFAULT_MOD = "FMKU60"
 DEFAULT_SRA = "Themisto"
@@ -233,8 +234,8 @@ def create_new_cfp(cfdk_tag, cfdk_zip, folder_path, git_url=None, git_init=False
     create_cfp_dir_structure(folder_path)
 
     # copy templates that should be copied only during create
-    os.system("cp ./lib/gitignore.template {0}/.gitignore".format(folder_path))
-    os.system("cp {0}/cFDK/SRA/LIB/TOP/Makefile.template {0}/Makefile".format(folder_path))
+    os.system("cp {0}/gitignore.template {1}/.gitignore".format(config_template_folder, folder_path))
+    os.system("cp {0}/cfdk_Makefile {1}/Makefile".format(config_template_folder, folder_path))
 
     return "", 0
 
@@ -401,13 +402,13 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     os.system("mkdir -p {}/env/".format(folder_path))
 
     # copy cFp kit
-    os.system("cp ./lib/machine_env.template {}/env/".format(folder_path))
-    os.system("cp ./lib/gen_env.py {}/env/".format(folder_path))
-    os.system("cp ./lib/setenv.sh {}/env/".format(folder_path))
+    os.system("cp {}/machine_env.template {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/gen_env.py {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/setenv.sh {}/env/".format(config_template_folder, folder_path))
     os.system("chmod +x {}/env/setenv.sh".format(folder_path))
     os.system("chmod +x {}/env/gen_env.py".format(folder_path))
 
-    with open("./lib/machine_env.template", "r") as input, open(env_file, "w") as outfile:
+    with open("{}/machine_env.template".format(config_template_folder), "r") as input, open(env_file, "w") as outfile:
         out = input.read()
         for i in range(0, len(__match_regex__)):
             out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
