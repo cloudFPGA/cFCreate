@@ -32,7 +32,8 @@ import re
 __cfp_json_path__ = "/../cFp.json"
 __env_file_name__ = "/this_machine_env.sh"
 
-__mandatory_keys__ = ['cFpMOD', 'usedRoleDir', 'usedRoleDir2', 'cFpSRAtype', 'roleName1', 'roleName2']
+__mandatory_keys__ = ['cFpMOD', 'usedRoleDir', 'usedRoleDir2', 'cFpSRAtype', 'roleName1', 'roleName2',
+                      'cfenvPath', 'cfenvPtyon3Bin']
 __optional_keys__ = ['cFa', 'additional_lines']
 
 __match_regex__ = []
@@ -58,6 +59,12 @@ __replace_regex__.append("roleName1")
 
 __match_regex__.append("##ROLE2##")
 __replace_regex__.append("roleName2")
+
+__match_regex__.append("##cfenv_path##")
+__replace_regex__.append("cfenvPath")
+
+__match_regex__.append("##python3_bin##")
+__replace_regex__.append("cfenvPython3Bin")
 
 
 def print_incomplete(msg=""):

@@ -1,5 +1,5 @@
 # /*******************************************************************************
-#  * Copyright 2016 -- 2020 IBM Corporation
+#  * Copyright 2016 -- 2021 IBM Corporation
 #  *
 #  * Licensed under the Apache License, Version 2.0 (the "License");
 #  * you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@
 #  *                       cloudFPGA
 #  *    =============================================
 #  *     Created: Apr 2019
-#  *     Authors: FAB, WEI, NGL
+#  *     Authors: FAB, WEI, NGL, DID
 #  *
 #  *     Description:
 #  *       Python framework to create new cloudFPGA projects (cFp).
@@ -36,7 +36,7 @@ from pprint import pprint
 
 __version__ = 0.7
 
-docstr="""cloudFPGA Project Management Framework
+docstr="""cloudFPGA Project Creation Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
@@ -77,6 +77,8 @@ DEFAULT_MOD = "FMKU60"
 DEFAULT_SRA = "Themisto"
 __env_file_name__ = "this_machine_env.sh"
 __version_string__ = "This cFp was created by cFCreate " + str(__version__)
+__to_be_defined_key__ = 'to-be-defined'
+
 
 default_questions = [
     {
@@ -92,26 +94,19 @@ default_questions = [
         # 'choices': ['x1Udp_x1Tcp_x2Mp_x2Mc', 'MPIv0_x2Mp_x2Mc'],
         'choices': ['x1Udp_x1Tcp_x2Mp_x2Mc'],
     },
-    # TODO
     # {
     #     'type': 'confirm',
-    #     'name': 'copyRole',
-    #     'message': 'Should the RoleEchoHls-Template be copied as ROLE',
+    #     'name': 'multipleRoles',
+    #     'message': 'Do you plan to create multiple ROLEs for this project?',
     #     'default': False
     # },
-    {
-        'type': 'confirm',
-        'name': 'multipleRoles',
-        'message': 'Do you plan to create multiple ROLEs for this project?',
-        'default': False
-    },
-    {
-        'type': 'input',
-        'name': 'roleName1',
-        'message': 'Name of the (first) Role (no spaces etc.):',
-        'default': 'default',
-        'filter': lambda val: val.split()[0]
-    },
+    # {
+    #     'type': 'input',
+    #     'name': 'roleName1',
+    #     'message': 'Name of the (first) Role (no spaces etc.):',
+    #     'default': 'default',
+    #     'filter': lambda val: val.split()[0]
+    # },
 ]
 
 vivado_question = {
@@ -121,29 +116,29 @@ vivado_question = {
     'default': '/opt/Xilinx/Vivado/2017.4/settings64.sh'
 }
 
-pr_questions = [
-    {
-        'type': 'input',
-        'name': 'usedRoleDir',
-        'message': 'Directory name of the first Role (no spaces etc.):',
-        'default': 'V1',
-        'filter': lambda val: val.split()[0]
-    },
-    {
-        'type': 'input',
-        'name': 'roleName2',
-        'message': 'Name of the second Role (no spaces etc.):',
-        'default': 'V2',
-        'filter': lambda val: val.split()[0]
-    },
-    {
-        'type': 'input',
-        'name': 'usedRoleDir2',
-        'message': 'Directory name of the second Role (no spaces etc.):',
-        'default': 'V2',
-        'filter': lambda val: val.split()[0]
-    },
-]
+# pr_questions = [
+#     {
+#         'type': 'input',
+#         'name': 'usedRoleDir',
+#         'message': 'Directory name of the first Role (no spaces etc.):',
+#         'default': 'V1',
+#         'filter': lambda val: val.split()[0]
+#     },
+#     {
+#         'type': 'input',
+#         'name': 'roleName2',
+#         'message': 'Name of the second Role (no spaces etc.):',
+#         'default': 'V2',
+#         'filter': lambda val: val.split()[0]
+#     },
+#     {
+#         'type': 'input',
+#         'name': 'usedRoleDir2',
+#         'message': 'Directory name of the second Role (no spaces etc.):',
+#         'default': 'V2',
+#         'filter': lambda val: val.split()[0]
+#     },
+# ]
 
 __xilinx_cmd_key__ = "xilinx_cmd"
 
@@ -173,6 +168,12 @@ __replace_regex__.append("roleName1")
 
 __match_regex__.append("##ROLE2##")
 __replace_regex__.append("roleName2")
+
+__match_regex__.append("##cfenv_path##")
+__replace_regex__.append("cfenvPath")
+
+__match_regex__.append("##python3_bin##")
+__replace_regex__.append("cfenvPython3Bin")
 
 __SRA_config_keys__ = []
 __SRA_config_keys__.append("additional_lines")  # must be at position 0!
@@ -323,6 +324,12 @@ def prepare_questions(folder_path, additional_defaults=None):
     return questions
 
 
+def get_python_envs():
+    cfenv_path = os.environ['VIRTUAL_ENV']
+    cfenv_py_bin = os.popen('which python3').read()
+    return cfenv_path, cfenv_py_bin
+
+
 def create_json(folder_path, envs):
     json_data = {}
     json_data['version'] = __version_string__
@@ -332,6 +339,10 @@ def create_json(folder_path, envs):
     json_data['usedRoleDir2'] = envs['usedRoleDir2']
     json_data['roleName1'] = envs['roleName1']
     json_data['roleName2'] = envs['roleName2']
+
+    cfenv_path, cfenv_py_bin = get_python_envs()
+    json_data['cfenvPath'] = cfenv_path
+    json_data['cfenvPython3Bin'] = cfenv_py_bin
 
     with open("{}/cFp.json".format(folder_path), "w+") as json_file:
         json.dump(json_data, json_file, indent=4)
@@ -353,12 +364,17 @@ def update_json(folder_path, new_entries=None, update_list=None):
             else:
                 data[e] = list(set(update_list[e]))
 
+    # in all cases, update the version and env settings
+    data['version'] = __version_string__
+    cfenv_path, cfenv_py_bin = get_python_envs()
+    data['cfenvPath'] = cfenv_path
+    data['cfenvPython3Bin'] = cfenv_py_bin
+
     with open("{}/cFp.json".format(folder_path), "w") as json_file:
         json.dump(data, json_file, indent=4)
 
 
 def copy_templates_and_set_env(folder_path, envs, backup_json=False):
-
     additional_envs = {}
     if backup_json:
         json_path = "{}/cFp.json".format(folder_path)
@@ -503,25 +519,30 @@ def main():
     questions = prepare_questions(folder_path, additional_defaults=question_defaults)
     answers = prompt(questions)
     answers_pr = {}
-    if answers['multipleRoles']:
-        custom_pr_questions = []
-        if question_defaults is not None:
-            for q in pr_questions:
-                for k in question_defaults:
-                    if q['name'] == k:
-                        q['default'] = question_defaults[k]
-                custom_pr_questions.append(q)
-        else:
-            custom_pr_questions = pr_questions
-        answers_pr = prompt(custom_pr_questions)
-        if answers_pr['usedRoleDir'][-1] != '/':
-            answers_pr['usedRoleDir'] += "/"
-        if answers_pr['usedRoleDir2'][-1] != '/':
-            answers_pr['usedRoleDir2'] += "/"
-    else:
-        answers_pr['usedRoleDir'] = ""
-        answers_pr['usedRoleDir2'] = ""
-        answers_pr['roleName2'] = "unused"
+    # if answers['multipleRoles']:
+    #     custom_pr_questions = []
+    #     if question_defaults is not None:
+    #         for q in pr_questions:
+    #             for k in question_defaults:
+    #                 if q['name'] == k:
+    #                     q['default'] = question_defaults[k]
+    #             custom_pr_questions.append(q)
+    #     else:
+    #         custom_pr_questions = pr_questions
+    #     answers_pr = prompt(custom_pr_questions)
+    #     if answers_pr['usedRoleDir'][-1] != '/':
+    #         answers_pr['usedRoleDir'] += "/"
+    #     if answers_pr['usedRoleDir2'][-1] != '/':
+    #         answers_pr['usedRoleDir2'] += "/"
+    # else:
+    #     answers_pr['usedRoleDir'] = ""
+    #     answers_pr['usedRoleDir2'] = ""
+    #     answers_pr['roleName2'] = "unused"
+    # for now, the role setting is managed by lingin
+    answers_pr['usedRoleDir'] = __to_be_defined_key__
+    answers_pr['usedRoleDir2'] = __to_be_defined_key__
+    answers_pr['roleName'] = __to_be_defined_key__
+    answers_pr['roleName2'] = __to_be_defined_key__
 
     envs = {**answers, **answers_pr}
     if 'xilinx_settings' not in envs:
@@ -549,6 +570,10 @@ def main():
 
 
 if __name__ == '__main__':
+    if not (hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)):
+        # This works with virtualenv for Python 3 and 2 and also for the venv module in Python 3
+        print("ERROR: It looks like this cFCreate isn't running in a virtual environment. STOP.")
+        sys.exit(1)
     main()
     exit(0)
 
