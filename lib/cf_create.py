@@ -450,6 +450,10 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     os.system("cp {}/lignin {}/".format(config_template_folder, folder_path))
     os.system("chmod +x {}/lignin".format(folder_path))
 
+    if os.path.isdir(folder_path + '.git/'):
+        # git config, add new files
+        os.system("cd {}; git add lignin env/".format(folder_path))
+
     create_json(folder_path, envs)
     os.system("chmod +x {}".format(env_file))
     if json_extend or backup_json:
