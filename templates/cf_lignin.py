@@ -42,7 +42,7 @@ Usage:
     lignin config (add-role <path-to-role-dir> <name> | use-role <name> | del-role <name> | show )
     lignin build (proj | monolithic | pr) [--role=<name>] [--incr] [--debug] 
     lignin clean [--full]
-    lignin admin (build (pr_full | pr_flash) | full_clean | set-2nd-role <name>)
+    lignin admin (build (pr_full | pr_flash) | full_clean | set-2nd-role <name> | write-to-json)
     
     lignin -h|--help
     lignin -v|--version
@@ -88,6 +88,8 @@ __none_key__ = 'None'
 __lignin_key__ = 'lignin-conf'
 __lignin_dict_template__ = {'version': __version__, 'roles': [], 'active_role': __to_be_defined_key__}
 __role_config_dict_templ__ = {'name': "", 'path': ""}
+__admin_key__ = 'admin'
+__admin_dict_template__ = {'2nd-role': __to_be_defined_key__}
 __shell_type_key__ = 'cFpSRAtype'
 __mod_type_key__ = 'cFpMOD'
 __dcps_folder_name__ = '/dcps/'
@@ -109,6 +111,11 @@ def main():
         cFp_data[__lignin_key__] = __lignin_dict_template__
         store_updated_cfp_json = True
 
+    if arguments['admin']:
+        if __admin_key__ not in cFp_data[__lignin_key__]:
+            cFp_data[__lignin_key__][__admin_key__] = __admin_dict_template__
+            store_updated_cfp_json = True
+
     # check for used role 1
     if cFp_data['roleName1'] == __to_be_defined_key__:
         store_updated_cfp_json = True
@@ -123,6 +130,7 @@ def main():
 
     # print(arguments)
     # handle arguments
+    # FIXME: I know, bad programming stile with endless indents instead of return...cleanup after first tests...
     if arguments['update-shell']:
         os.system("{} {}/get_latest_dcp.py".format(os.environ['cFpsysPy3_cmd'], cfp_env_folder))
     elif arguments['clean']:
@@ -196,7 +204,7 @@ def main():
                 store_updated_cfp_json = True
             else:
                 print("[Lignin:ERROR] No role with name {} is defined.".format(del_role))
-    elif arguments['build']:
+    elif arguments['build'] and not arguments['admin']:
         cur_active_role = cFp_data[__lignin_key__]['active_role']
         if arguments['--role'] is not None:
             cur_active_role = arguments['--role']
@@ -262,7 +270,103 @@ def main():
                               .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
                                       cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
     elif arguments['admin']:
-        print("NOT-YET-IMPLEMENTED")
+        if arguments['full_clean']:
+            os.system('cd {}; make full_clean'.format(cfp_root))
+        elif arguments['set-2nd-role']:
+            cFp_data[__lignin_key__][__admin_key__]['2nd-role'] = arguments['<name>']
+            store_updated_cfp_json = True
+        elif arguments['write-to-json']:
+            print("[Lignin:INFO] Writing current role setting to cFp.json.")
+            cur_active_role_1 = cFp_data[__lignin_key__]['active_role']
+            if cur_active_role_1 == __none_key__ or cur_active_role_1 == __to_be_defined_key__:
+                print("[Lignin:ERROR] A role must be set active first, or defined using the --role option.")
+            else:
+                is_existing = False
+                cur_active_role_dict_1 = None
+                for existing_entry in cFp_data[__lignin_key__]['roles']:
+                    if existing_entry['name'] == cur_active_role_1:
+                        is_existing = True
+                        cur_active_role_dict_1 = existing_entry
+                        break
+                if not is_existing:
+                    print("[Lignin:ERROR] No role with name {} is defined.".format(cur_active_role_1))
+                else:
+                    write_2nd_role = True
+                    cur_active_role_2 = cFp_data[__lignin_key__][__admin_key__]['2nd-role']
+                    cur_active_role_dict_2 = None
+                    if cur_active_role_2 == __none_key__ or cur_active_role_2 == __to_be_defined_key__:
+                        write_2nd_role = False
+                    else:
+                        is_existing = False
+                        for existing_entry in cFp_data[__lignin_key__]['roles']:
+                            if existing_entry['name'] == cur_active_role_2:
+                                is_existing = True
+                                cur_active_role_dict_2 = existing_entry
+                                break
+                        if not is_existing:
+                            write_2nd_role = False
+                        # update cFp struct
+                        cFp_data['roleName1'] = cur_active_role_dict_1['name']
+                        cFp_data['usedRoleDir'] = cur_active_role_dict_1['path']
+                        if write_2nd_role:
+                            cFp_data['roleName2'] = cur_active_role_dict_2['name']
+                            cFp_data['usedRoleDir2'] = cur_active_role_dict_2['path']
+                        store_updated_cfp_json = True
+        elif arguments['build']:
+            cur_active_role = cFp_data[__lignin_key__]['active_role']
+            if cur_active_role == __none_key__ or cur_active_role == __to_be_defined_key__:
+                print("[Lignin:ERROR] A role must be set active first, or defined using the --role option.")
+            else:
+                is_existing = False
+                cur_active_role_dict = None
+                for existing_entry in cFp_data[__lignin_key__]['roles']:
+                    if existing_entry['name'] == cur_active_role:
+                        is_existing = True
+                        cur_active_role_dict = existing_entry
+                        break
+                if not is_existing:
+                    print("[Lignin:ERROR] No role with name {} is defined.".format(cur_active_role))
+                else:
+                    if arguments['pr_flash']:
+                        # no 2nd role is required
+                        info_str = "[Lignin:INFO] Starting to build all files for a new platform logic, using role {}" \
+                            .format(cur_active_role)
+                        make_cmd = 'pr_flash'
+                        info_str += '...'
+                        print(info_str)
+                        # start make and OVERWRITE the environment variables
+                        os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
+                                    export roleName2={}; export usedRoleDir2={}; make {}'
+                                  .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
+                                          cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
+                    elif arguments['pr_full']:
+                        # two active roles are required
+                        cur_active_role_2 = cFp_data[__lignin_key__][__admin_key__]['2nd-role']
+                        if cur_active_role_2 == __none_key__ or cur_active_role_2 == __to_be_defined_key__:
+                            print("[Lignin:ERROR] A 2nd role must be set active first.")
+                        else:
+                            is_existing = False
+                            cur_active_role_dict_2 = None
+                            for existing_entry in cFp_data[__lignin_key__]['roles']:
+                                if existing_entry['name'] == cur_active_role_2:
+                                    is_existing = True
+                                    cur_active_role_dict_2 = existing_entry
+                                    break
+                            if not is_existing:
+                                print("[Lignin:ERROR] No role with name {} is defined.".format(cur_active_role_2))
+                            else:
+                                info_str = "[Lignin:INFO] Starting to build a *complete* partial reconfiguration design, " + \
+                                            "using roles {} and {}" \
+                                    .format(cur_active_role, cur_active_role_2)
+                                make_cmd = 'pr_full'
+                                info_str += '...'
+                                print(info_str)
+                                # start make and OVERWRITE the environment variables
+                                os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
+                                            export roleName2={}; export usedRoleDir2={}; make {}'
+                                          .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
+                                                  cur_active_role_dict_2['name'], cur_active_role_dict_2['path'],
+                                                  make_cmd))
 
     # finally
     if store_updated_cfp_json:
