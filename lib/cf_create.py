@@ -329,7 +329,7 @@ def prepare_questions(folder_path, additional_defaults=None):
 def get_python_envs():
     # on this machine, that's fine
     cfenv_path = os.environ['VIRTUAL_ENV']
-    
+
     # this is not working, we need the python3 without the virutalenv
     # sys_py_bin = os.popen('which python3').read()
     sys_py_bin = None
@@ -573,10 +573,10 @@ def main():
     #     answers_pr['usedRoleDir2'] = ""
     #     answers_pr['roleName2'] = "unused"
     # for now, the role setting is managed by lignin
-    answers_pr['usedRoleDir'] = __to_be_defined_key__
-    answers_pr['usedRoleDir2'] = __to_be_defined_key__
-    answers_pr['roleName1'] = __to_be_defined_key__
+    answers_pr['roleName1'] = 'default'
+    answers_pr['usedRoleDir'] = ''   # default
     answers_pr['roleName2'] = __to_be_defined_key__
+    answers_pr['usedRoleDir2'] = __to_be_defined_key__
 
     envs = {**answers, **answers_pr}
     if 'xilinx_settings' not in envs:
