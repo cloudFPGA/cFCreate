@@ -44,6 +44,10 @@ For Ubuntu:
 $ apt install python3.8-dev
 ```
 
+**Important: The absolute path to this virutalenv and the virtualenv itself will be used by other components of 
+the cloudFPGA framework!** 
+If cFCreate is moved to a different location, all projects must be updated (using `cFCreate update`).
+
 Usage
 -----------
 ```bash

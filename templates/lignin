@@ -29,11 +29,14 @@
 #  *       (see further: https://en.wikipedia.org/wiki/Lignin).
 #  *
 
+# 0. get current folder
+cur_dir=$(pwd)
+
 # so, some kind of bootstrapping
 # 1. source the cFp environment
-source env/setenv.sh
+source $cur_dir/env/setenv.sh
 # 2. now, since the path are there:
 source $cFenv_path/bin/activate
 # 3. finally, invoke the script
-python3 env/cf_lingin.py
+python3 $cur_dir/env/cf_lignin.py "$@"
 

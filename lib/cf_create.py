@@ -66,7 +66,7 @@ Options:
     --cfa-repo=<cfagit>         Link to the cFa git repository
     --cfa-zip=<path-to-zip>     Path to a cFa zip folder
 
-Copyright IBM Research, All Rights Reserved.
+Copyright IBM Research, licensed under the Apache License 2.0.
 Contact: {ngl,fab,wei, did}@zurich.ibm.com
 """
 
@@ -538,7 +538,7 @@ def main():
     #     answers_pr['usedRoleDir'] = ""
     #     answers_pr['usedRoleDir2'] = ""
     #     answers_pr['roleName2'] = "unused"
-    # for now, the role setting is managed by lingin
+    # for now, the role setting is managed by lignin
     answers_pr['usedRoleDir'] = __to_be_defined_key__
     answers_pr['usedRoleDir2'] = __to_be_defined_key__
     answers_pr['roleName'] = __to_be_defined_key__
