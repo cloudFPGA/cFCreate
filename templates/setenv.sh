@@ -38,9 +38,12 @@ while [ -h "$SOURCE" ]; do # resolve $SOURCE until the file is no longer a symli
   [[ $SOURCE != /* ]] && SOURCE="$DIR/$SOURCE" # if $SOURCE was a relative symlink, we need to resolve it relative to the path where the symlink file was located
 done
 DIR="$( cd -P "$( dirname "$SOURCE" )" >/dev/null 2>&1 && pwd )"
-echo=$DIR
+#echo $DIR
 
-# cFBuild also requires python3...so it should be there
+export cFsysPy3_cmd_hint_0=$(which python3.8)
+export cFsysPy3_cmd_hint_1=$(which python3)
+
+# cFCreate also requires python3...so it should be there
 # will guarantee an up to date env file
 # on success, load env
 $DIR/gen_env.py && source $DIR/this_machine_env.sh

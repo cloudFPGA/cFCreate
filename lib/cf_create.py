@@ -327,7 +327,9 @@ def prepare_questions(folder_path, additional_defaults=None):
 
 
 def get_python_envs():
+    # on this machine, that's fine
     cfenv_path = os.environ['VIRTUAL_ENV']
+    
     # this is not working, we need the python3 without the virutalenv
     # sys_py_bin = os.popen('which python3').read()
     sys_py_bin = None
@@ -356,10 +358,6 @@ def create_json(folder_path, envs):
     json_data['roleName1'] = envs['roleName1']
     json_data['roleName2'] = envs['roleName2']
 
-    cfenv_path, sys_py_bin = get_python_envs()
-    json_data['cfenvPath'] = cfenv_path
-    json_data['sysPython3Bin'] = sys_py_bin
-
     with open("{}/cFp.json".format(folder_path), "w+") as json_file:
         json.dump(json_data, json_file, indent=4)
 
@@ -387,11 +385,8 @@ def update_json(folder_path, new_entries=None, update_list=None):
                 # data[e] = list(set(update_list[e]))
                 data[e] = update_list[e]
 
-    # in all cases, update the version and env settings
+    # in all cases, update the version
     data['version'] = __version_string__
-    cfenv_path, sys_py_bin = get_python_envs()
-    data['cfenvPath'] = cfenv_path
-    data['sysPython3Bin'] = sys_py_bin
 
     with open("{}/cFp.json".format(folder_path), "w") as json_file:
         json.dump(data, json_file, indent=4)
@@ -463,6 +458,11 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     with open("{}/cFp.json".format(folder_path), "r") as json_file:
         cfp_data = json.load(json_file)
     envs.update(cfp_data)
+
+    # adding python env
+    cfenv_path, sys_py_bin = get_python_envs()
+    envs['cfenvPath'] = cfenv_path
+    envs['sysPython3Bin'] = sys_py_bin
 
     with open("{}/machine_env.template".format(config_template_folder), "r") as input, open(env_file, "w") as outfile:
         out = input.read()

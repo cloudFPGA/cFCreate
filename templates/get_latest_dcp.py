@@ -79,7 +79,7 @@ def main():
         root_abs = os.path.realpath(me_abs + debugging_flow + "/env/" + "/../")
     cFp_data['abs_path'] = root_abs
     dcps_folder = root_abs + __dcps_folder_name__
-    os.system("mkdir -p {}".format(dcps_folder))
+    os.system("mkdir -p {}".format(dcps_folder))  # to be sure
     dcp_file_name = "3_top{}_STATIC.dcp".format(cFp_data[__mod_type_key__])
     target_file_name = os.path.abspath(dcps_folder + "/" + dcp_file_name)
     meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])

@@ -84,9 +84,13 @@ Contact: {ngl,fab,wei, did}@zurich.ibm.com
 
 __cfp_json_name__ = 'cFp.json'
 __to_be_defined_key__ = 'to-be-defined'
+__none_key__ = 'None'
 __lignin_key__ = 'lignin-conf'
 __lignin_dict_template__ = {'version': __version__, 'roles': [], 'active_role': __to_be_defined_key__}
 __role_config_dict_templ__ = {'name': "", 'path': ""}
+__shell_type_key__ = 'cFpSRAtype'
+__mod_type_key__ = 'cFpMOD'
+__dcps_folder_name__ = '/dcps/'
 
 
 def main():
@@ -110,6 +114,12 @@ def main():
         store_updated_cfp_json = True
         cFp_data['roleName1'] = 'default'
         cFp_data['usedRoleDir'] = ''  # default ROLE/ folder, no hierarchy
+
+    dcps_folder = os.path.abspath(cfp_root + __dcps_folder_name__)
+    dcp_file_name = "3_top{}_STATIC.dcp".format(cFp_data[__mod_type_key__])
+    dcp_file_path = os.path.abspath(dcps_folder + "/" + dcp_file_name)
+    meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])
+    meta_file_path = os.path.abspath(dcps_folder + "/" + meta_file_name)
 
     print(arguments)
 
@@ -189,59 +199,71 @@ def main():
                 print("[Lignin:ERROR] No role with name {} is defined.".format(del_role))
     elif arguments['build']:
         cur_active_role = cFp_data[__lignin_key__]['active_role']
-        if arguments['--role'] is not False:
+        if arguments['--role'] is not None:
             cur_active_role = arguments['--role']
-        is_existing = False
-        cur_active_role_dict = None
-        for existing_entry in cFp_data[__lignin_key__]['roles']:
-            if existing_entry['name'] == cur_active_role:
-                is_existing = True
-                cur_active_role_dict = existing_entry
-                break
-        if not is_existing:
-            print("[Lignin:ERROR] No role with name {} is defined.".format(cur_active_role))
+        if cur_active_role == __none_key__ or cur_active_role == __to_be_defined_key__:
+            print("[Lignin:ERROR] A role must be set active first, or defined using the --role option.")
         else:
-            with_debug = False
-            with_incr = False
-            if arguments['--debug']:
-                with_debug = True
-            if arguments['--incr']:
-                with_incr = True
-            if arguments['proj']:
-                print("[Lignin:INFO] Starting to create the project files for a monolithic design with role {}..."
-                      .format(cur_active_role))
-                # start make and OVERWRITE the environment variables
-                os.system('cd {}; export roleName1={}; export usedRoleDir={}; make monolithic_proj'
-                          .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path']))
-                print("[Lignin:INFO] ...DONE creating project files for a monolithic design.")
-            elif arguments['monolithic']:
-                info_str = "[Lignin:INFO] Starting to to build a monolithic design with role {}"\
-                            .format(cur_active_role)
-                make_cmd = 'monolithic'
-                if with_incr:
-                    make_cmd += '_incr'
-                    info_str += ' using the incremental build feature'
-                if with_debug:
-                    make_cmd += '_debug'
-                    info_str += ' and inserting debug probes (as defined in {})'\
-                        .format(os.path.abspath(cfp_root + '/TOP/xdc/debug.xdc'))
-                print(info_str)
-                # start make and OVERWRITE the environment variables
-                os.system('cd {}; export roleName1={}; export usedRoleDir={}; make {}'
-                          .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
-            elif arguments['pr']:
-                if with_incr:
-                    print("[Lignin:INFO] Incremental compile with a partial reconfiguration design is not (yet) " +
-                          "supported (but anyhow, just the role is build).")
-                info_str = "[Lignin:INFO] Starting to to build a partial reconfiguration design for role {}" \
-                    .format(cur_active_role)
-                make_cmd = 'monolithic'
-                if with_debug:
-                    print("[Lignin:ERROR] NOT-YET-IMPLEMENTED (pr build with debug probes).")
-                else:
-                    # TODO: check for dcp!
-                    #TODO: check for right pr flow...2? check dependency in tcl-make
-                    print("starting pr")
+            is_existing = False
+            cur_active_role_dict = None
+            for existing_entry in cFp_data[__lignin_key__]['roles']:
+                if existing_entry['name'] == cur_active_role:
+                    is_existing = True
+                    cur_active_role_dict = existing_entry
+                    break
+            if not is_existing:
+                print("[Lignin:ERROR] No role with name {} is defined.".format(cur_active_role))
+            else:
+                with_debug = False
+                with_incr = False
+                if arguments['--debug']:
+                    with_debug = True
+                if arguments['--incr']:
+                    with_incr = True
+                if arguments['proj']:
+                    print("[Lignin:INFO] Starting to create the project files for a monolithic design with role {}..."
+                          .format(cur_active_role))
+                    # start make and OVERWRITE the environment variables
+                    os.system('cd {}; export roleName1={}; export usedRoleDir={}; make monolithic_proj'
+                              .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path']))
+                elif arguments['monolithic']:
+                    info_str = "[Lignin:INFO] Starting to to build a monolithic design with role {}"\
+                                .format(cur_active_role)
+                    make_cmd = 'monolithic'
+                    if with_incr:
+                        make_cmd += '_incr'
+                        info_str += ' using the incremental build feature'
+                    if with_debug:
+                        make_cmd += '_debug'
+                        info_str += ' and inserting debug probes (as defined in {})'\
+                            .format(os.path.abspath(cfp_root + '/TOP/xdc/debug.xdc'))
+                    info_str += '...'
+                    print(info_str)
+                    # start make and OVERWRITE the environment variables
+                    os.system('cd {}; export roleName1={}; export usedRoleDir={}; make {}'
+                              .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
+                elif arguments['pr']:
+                    if with_incr:
+                        print("[Lignin:INFO] Incremental compile with a partial reconfiguration design is not (yet) " +
+                              "supported (but anyhow, just the role is build).")
+                    info_str = "[Lignin:INFO] Starting to to build a partial reconfiguration design for role {}" \
+                        .format(cur_active_role)
+                    make_cmd = 'pr2_only'
+                    if with_debug:
+                        print("[Lignin:ERROR] NOT-YET-IMPLEMENTED (pr build with debug probes).")
+                    else:
+                        # check for dcp
+                        if not os.path.isfile(dcp_file_path) or not os.path.isfile(meta_file_path):
+                            os.system("{} {}/get_latest_dcp.py".format(os.environ['cFpsysPy3_cmd'], cfp_env_folder))
+                    info_str += '...'
+                    print(info_str)
+                    # start make and OVERWRITE the environment variables
+                    os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
+                                export roleName2={}; export usedRoleDir2={}; make {}'
+                              .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
+                                      cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
+    elif arguments['admin']:
+        print("NOT-YET-IMPLEMENTED")
 
     # finally
     if store_updated_cfp_json:
