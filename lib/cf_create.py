@@ -78,7 +78,7 @@ DEFAULT_SRA = "Themisto"
 __env_file_name__ = "this_machine_env.sh"
 __version_string__ = "This cFp was created by cFCreate " + str(__version__)
 __to_be_defined_key__ = 'to-be-defined'
-
+__lignin_key__ = 'lignin-conf'
 
 default_questions = [
     {
@@ -169,17 +169,19 @@ __replace_regex__.append("roleName1")
 __match_regex__.append("##ROLE2##")
 __replace_regex__.append("roleName2")
 
-__match_regex__.append("##cfenv_path##")
+__match_regex__.append("##virtual_path##")
 __replace_regex__.append("cfenvPath")
 
 __match_regex__.append("##python3_bin##")
-__replace_regex__.append("cfenvPython3Bin")
+__replace_regex__.append("sysPython3Bin")
 
 __SRA_config_keys__ = []
 __SRA_config_keys__.append("additional_lines")  # must be at position 0!
+__SRA_config_keys__.append(__lignin_key__)
 
 __json_backup_keys__ = []
 __json_backup_keys__.append("additional_lines")
+__json_backup_keys__.append(__lignin_key__)
 
 
 def create_cfp_dir_structure(folder_path):
@@ -326,8 +328,22 @@ def prepare_questions(folder_path, additional_defaults=None):
 
 def get_python_envs():
     cfenv_path = os.environ['VIRTUAL_ENV']
-    cfenv_py_bin = os.popen('which python3').read()
-    return cfenv_path, cfenv_py_bin
+    # this is not working, we need the python3 without the virutalenv
+    # sys_py_bin = os.popen('which python3').read()
+    sys_py_bin = None
+    if 'cFsysPy3_cmd_hint_0' in os.environ and os.path.isfile(os.environ['cFsysPy3_cmd_hint_0']):
+        sys_py_bin = os.environ['cFsysPy3_cmd_hint_0']
+    elif 'cFsysPy3_cmd_hint_1' in os.environ and os.path.isfile(os.environ['cFsysPy3_cmd_hint_1']):
+        sys_py_bin = os.environ['cFsysPy3_cmd_hint_1']
+    elif os.path.isfile('/usr/bin/python3.8'):
+        sys_py_bin = '/usr/bin/python3.8'
+    elif os.path.isfile('/usr/bin/python3'):
+        sys_py_bin = '/usr/bin/python3'
+    else:
+        # as fallback, better than nothing
+        # returns the virtualenv python
+        sys_py_bin = os.popen('which python3').read()
+    return cfenv_path, sys_py_bin
 
 
 def create_json(folder_path, envs):
@@ -340,9 +356,9 @@ def create_json(folder_path, envs):
     json_data['roleName1'] = envs['roleName1']
     json_data['roleName2'] = envs['roleName2']
 
-    cfenv_path, cfenv_py_bin = get_python_envs()
+    cfenv_path, sys_py_bin = get_python_envs()
     json_data['cfenvPath'] = cfenv_path
-    json_data['cfenvPython3Bin'] = cfenv_py_bin
+    json_data['sysPython3Bin'] = sys_py_bin
 
     with open("{}/cFp.json".format(folder_path), "w+") as json_file:
         json.dump(json_data, json_file, indent=4)
@@ -358,17 +374,24 @@ def update_json(folder_path, new_entries=None, update_list=None):
     if update_list is not None:
         for e in update_list:
             if e in data.keys():
-                new_list = data[e]
-                new_list.extend(update_list[e])
-                data[e] = list(set(new_list))
+                if type(data[e]) is list:
+                    new_list = data[e]
+                    new_list.extend(update_list[e])
+                    data[e] = list(set(new_list))
+                elif type(data[e]) is dict:
+                    data[e].update(update_list[e])
+                else:
+                    print("Warning: forced to overwrite config parameter {} (previous value {})".format(e, data[e]))
+                    data[e] = update_list[e]
             else:
-                data[e] = list(set(update_list[e]))
+                # data[e] = list(set(update_list[e]))
+                data[e] = update_list[e]
 
     # in all cases, update the version and env settings
     data['version'] = __version_string__
-    cfenv_path, cfenv_py_bin = get_python_envs()
+    cfenv_path, sys_py_bin = get_python_envs()
     data['cfenvPath'] = cfenv_path
-    data['cfenvPython3Bin'] = cfenv_py_bin
+    data['sysPython3Bin'] = sys_py_bin
 
     with open("{}/cFp.json".format(folder_path), "w") as json_file:
         json.dump(data, json_file, indent=4)
@@ -423,25 +446,36 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     os.system("cp {}/setenv.sh {}/env/".format(config_template_folder, folder_path))
     os.system("chmod +x {}/env/setenv.sh".format(folder_path))
     os.system("chmod +x {}/env/gen_env.py".format(folder_path))
-
-    with open("{}/machine_env.template".format(config_template_folder), "r") as input, open(env_file, "w") as outfile:
-        out = input.read()
-        for i in range(0, len(__match_regex__)):
-            out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
-
-        outfile.write(out)
+    os.system("cp {}/create_sig.py {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/create_sig.sh {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/admin_sig.py {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/admin_sig.sh {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/get_latest_dcp.py {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/cf_lignin.py {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/lignin {}/".format(config_template_folder, folder_path))
+    os.system("chmod +x {}/lignin".format(folder_path))
 
     create_json(folder_path, envs)
     os.system("chmod +x {}".format(env_file))
     if json_extend or backup_json:
         update_json(folder_path, update_list=additional_envs)
+    # now, load new data
+    with open("{}/cFp.json".format(folder_path), "r") as json_file:
+        cfp_data = json.load(json_file)
+    envs.update(cfp_data)
+
+    with open("{}/machine_env.template".format(config_template_folder), "r") as input, open(env_file, "w") as outfile:
+        out = input.read()
+        for i in range(0, len(__match_regex__)):
+            out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
+        outfile.write(out)
 
     return 0
 
 
 def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
     if git_url is None and zip_path is None:
-        return "ERROR: Missing manadtory arguments", 1
+        return "ERROR: Missing mandatory arguments", 1
 
     folder_abspath = os.path.abspath(folder_path)
 
@@ -541,7 +575,7 @@ def main():
     # for now, the role setting is managed by lignin
     answers_pr['usedRoleDir'] = __to_be_defined_key__
     answers_pr['usedRoleDir2'] = __to_be_defined_key__
-    answers_pr['roleName'] = __to_be_defined_key__
+    answers_pr['roleName1'] = __to_be_defined_key__
     answers_pr['roleName2'] = __to_be_defined_key__
 
     envs = {**answers, **answers_pr}

@@ -25,5 +25,7 @@
 #  *       Bash script to invoke the cFCreate framework
 #  *
 
+export cFsysPy3_cmd_hint_0=$(which python3.8)
+export cFsysPy3_cmd_hint_1=$(which python3)
 source cfenv/bin/activate
 python3 ./lib/cf_create.py "$@"

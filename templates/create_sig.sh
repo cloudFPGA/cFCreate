@@ -1,3 +1,4 @@
+#!/bin/bash
 # /*******************************************************************************
 #  * Copyright 2016 -- 2021 IBM Corporation
 #  *
@@ -17,28 +18,17 @@
 #  *
 #  *                       cloudFPGA
 #  *    =============================================
-#  *     Created: Apr 2019
+#  *     Created: Nov 2021
 #  *     Authors: FAB, WEI, NGL, DID
 #  *
 #  *     Description:
-#  *        Auto generated file that exports all necessary environment variables
+#  *       Bash wrapper for create_sig.py (necessary due to Vivado virtualenv)
 #  *
 
-##SOURCE_VIVADO##
-# we need absolut paths
-rootDir="##ROOTDIR##"
+# necessary due to Vivado python virtualenv
+unset PYTHONHOME
+unset PYTHONPATH
 
-export cFpRootDir="$rootDir/"
-export cFpIpDir="$rootDir/ip/"
-export cFpMOD="##MOD##"
-export usedRoleDir="$rootDir/ROLE/##DIR1##"
-export usedRole2Dir="$rootDir/ROLE/##DIR2##"
-export cFpSRAtype="##SRA##"
-export cFpXprDir="$rootDir/xpr/"
-export cFpDcpDir="$rootDir/dcps/"
-export roleName1="##ROLE1##"
-export roleName2="##ROLE2##"
-export cFenv_path="##virtual_path##"
-export cFsysPy3_cmd="##python3_bin##"
-
+#use system python3.8, not cfenv! (regression etc.)
+$cFsysPy3_cmd $cFpRootDir/env/create_sig.py "$@"
 

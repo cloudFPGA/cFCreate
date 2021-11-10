@@ -33,7 +33,7 @@ __cfp_json_path__ = "/../cFp.json"
 __env_file_name__ = "/this_machine_env.sh"
 
 __mandatory_keys__ = ['cFpMOD', 'usedRoleDir', 'usedRoleDir2', 'cFpSRAtype', 'roleName1', 'roleName2',
-                      'cfenvPath', 'cfenvPtyon3Bin']
+                      'cfenvPath', 'sysPython3Bin']
 __optional_keys__ = ['cFa', 'additional_lines']
 
 __match_regex__ = []
@@ -60,16 +60,16 @@ __replace_regex__.append("roleName1")
 __match_regex__.append("##ROLE2##")
 __replace_regex__.append("roleName2")
 
-__match_regex__.append("##cfenv_path##")
+__match_regex__.append("##virtual_path##")
 __replace_regex__.append("cfenvPath")
 
 __match_regex__.append("##python3_bin##")
-__replace_regex__.append("cfenvPython3Bin")
+__replace_regex__.append("sysPython3Bin")
 
 
 def print_incomplete(msg=""):
     me_abs = os.path.realpath(__file__)
-    cfp_json_file = me_abs + __cfp_json_path__
+    cfp_json_file = os.path.abspath(me_abs + __cfp_json_path__)
     print("The project describing file {} is invalid.\n{}\n".format(cfp_json_file, msg) +
           "Please use 'cFBuild update' to fix this project setup.")
     exit(1)
