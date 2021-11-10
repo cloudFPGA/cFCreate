@@ -121,8 +121,7 @@ def main():
     meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])
     meta_file_path = os.path.abspath(dcps_folder + "/" + meta_file_name)
 
-    print(arguments)
-
+    # print(arguments)
     # handle arguments
     if arguments['update-shell']:
         os.system("{} {}/get_latest_dcp.py".format(os.environ['cFpsysPy3_cmd'], cfp_env_folder))
