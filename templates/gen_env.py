@@ -35,7 +35,7 @@ __to_be_defined_key__ = 'to-be-defined'
 __lignin_key__ = 'lignin-conf'
 __cfenv_small_name__ = 'cfenv-small'
 __cfenv_path_from_root__ = '/env/' + __cfenv_small_name__ + '/'
-__cfenv_req_packages__ = 'docopt==0.6.2'
+__cfenv_req_packages__ = 'docopt==0.6.2 requests==2.26.0'
 
 __mandatory_keys__ = ['cFpMOD', 'usedRoleDir', 'usedRoleDir2', 'cFpSRAtype', 'roleName1', 'roleName2']
 __optional_keys__ = ['cFa', 'additional_lines', __lignin_key__]

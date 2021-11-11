@@ -23,6 +23,11 @@
 #  *     Description:
 #  *       Python script to create build signature file
 #  *
+#  *     ATTENTION: DO NOT MODIFY! (not even a single comma!)
+#  *     This file is here to protect YOU from damaging FPGAs
+#  *     during partial reconfiguration. Any change could cause
+#  *     hardware damage, potentially. Thanks ;).
+#  *
 
 import sys
 import os
@@ -93,6 +98,11 @@ def main(new_bin_file_name, pr_verify_rpt_file_name):
     target_file_name = os.path.abspath(dcps_folder + "/" + dcp_file_name)
     meta_file_name = "3_top{}_STATIC.json".format(cFp_data[__mod_type_key__])
     target_meta_name = os.path.abspath(dcps_folder + "/" + meta_file_name)
+    # check preconditions and stop if necessary
+    if not os.path.isfile(target_file_name) or not os.path.isfile(target_meta_name):
+        print("[cFBuild] WARNING: {} or {} does not exist, so no signature can be created. Stop.".format(dcp_file_name, meta_file_name))
+        # return so that the tcl can continue
+        return 0
 
     new_bin_file_path = os.path.abspath(dcps_folder + '/' + new_bin_file_name)
     if not os.path.isfile(new_bin_file_path):
