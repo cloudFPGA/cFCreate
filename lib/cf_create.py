@@ -34,7 +34,7 @@ import re
 from PyInquirer import prompt, print_json
 from pprint import pprint
 
-__version__ = 0.7
+__version__ = 0.8
 
 docstr="""cloudFPGA Project Creation Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
@@ -67,7 +67,7 @@ Options:
     --cfa-zip=<path-to-zip>     Path to a cFa zip folder
 
 Copyright IBM Research, licensed under the Apache License 2.0.
-Contact: {ngl,fab,wei, did}@zurich.ibm.com
+Contact: {ngl,fab,wei, did, hle}@zurich.ibm.com
 """
 
 config_default_cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"

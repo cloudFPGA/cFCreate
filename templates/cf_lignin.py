@@ -33,7 +33,7 @@ import os
 import sys
 from docopt import docopt
 
-__version__ = 0.1
+__version__ = 0.2
 
 docstr = """Lignin -- cloudFPGA Project Build & Management Framework
 
@@ -79,20 +79,27 @@ Options:
     --full                               Makes a full clean, also removing generated HLS cores from the IP library.
 
 Copyright IBM Research, licensed under the Apache License 2.0.
-Contact: {ngl,fab,wei, did}@zurich.ibm.com
+Contact: {ngl,fab,wei, did, hle}@zurich.ibm.com
 """
 
 __cfp_json_name__ = 'cFp.json'
 __to_be_defined_key__ = 'to-be-defined'
 __none_key__ = 'None'
 __lignin_key__ = 'lignin-conf'
-__lignin_dict_template__ = {'version': __version__, 'roles': [], 'active_role': __to_be_defined_key__}
 __role_config_dict_templ__ = {'name': "", 'path': ""}
+__default_role_entry__ = {'name': 'default', 'path': ""}
+__lignin_dict_template__ = {'version': __version__, 'roles': [__default_role_entry__],
+                            'active_role': __to_be_defined_key__}
 __admin_key__ = 'admin'
 __admin_dict_template__ = {'2nd-role': __to_be_defined_key__}
 __shell_type_key__ = 'cFpSRAtype'
 __mod_type_key__ = 'cFpMOD'
 __dcps_folder_name__ = '/dcps/'
+
+
+def get_cfp_role_path(cfp_root, role_entry):
+    role_path = os.path.abspath(cfp_root + '/ROLE/' + role_entry['path'])
+    return role_path
 
 
 def main():
@@ -232,7 +239,8 @@ def main():
                           .format(cur_active_role))
                     # start make and OVERWRITE the environment variables
                     os.system('cd {}; export roleName1={}; export usedRoleDir={}; make monolithic_proj'
-                              .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path']))
+                              .format(cfp_root, cur_active_role_dict['name'],
+                                      get_cfp_role_path(cfp_root, cur_active_role_dict)))
                 elif arguments['monolithic']:
                     info_str = "[Lignin:INFO] Starting to to build a monolithic design with role {}"\
                                 .format(cur_active_role)
@@ -248,11 +256,12 @@ def main():
                     print(info_str)
                     # start make and OVERWRITE the environment variables
                     os.system('cd {}; export roleName1={}; export usedRoleDir={}; make {}'
-                              .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
+                              .format(cfp_root, cur_active_role_dict['name'],
+                                      get_cfp_role_path(cfp_root, cur_active_role_dict), make_cmd))
                 elif arguments['pr']:
                     if with_incr:
                         print("[Lignin:INFO] Incremental compile with a partial reconfiguration design is not (yet) " +
-                              "supported (but anyhow, just the role is build).")
+                          "supported (but anyhow, just the role is build).")
                     info_str = "[Lignin:INFO] Starting to to build a partial reconfiguration design for role {}" \
                         .format(cur_active_role)
                     make_cmd = 'pr2_only'
@@ -267,8 +276,11 @@ def main():
                     # start make and OVERWRITE the environment variables
                     os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
                                 export roleName2={}; export usedRoleDir2={}; make {}'
-                              .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
-                                      cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
+                              .format(cfp_root,
+                                      # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                      __to_be_defined_key__, __to_be_defined_key__,  # role 1 should be totally ignored?
+                                      cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                      make_cmd))
     elif arguments['admin']:
         if arguments['full_clean']:
             os.system('cd {}; make full_clean'.format(cfp_root))
@@ -337,8 +349,11 @@ def main():
                         # start make and OVERWRITE the environment variables
                         os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
                                     export roleName2={}; export usedRoleDir2={}; make {}'
-                                  .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
-                                          cur_active_role_dict['name'], cur_active_role_dict['path'], make_cmd))
+                                  .format(cfp_root,
+                                          # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                          __to_be_defined_key__, __to_be_defined_key__,  # role 1 should be totally ignored?
+                                          cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                          make_cmd))
                     elif arguments['pr_full']:
                         # two active roles are required
                         cur_active_role_2 = cFp_data[__lignin_key__][__admin_key__]['2nd-role']
@@ -364,12 +379,15 @@ def main():
                                 # start make and OVERWRITE the environment variables
                                 os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
                                             export roleName2={}; export usedRoleDir2={}; make {}'
-                                          .format(cfp_root, cur_active_role_dict['name'], cur_active_role_dict['path'],
-                                                  cur_active_role_dict_2['name'], cur_active_role_dict_2['path'],
+                                          .format(cfp_root,
+                                                  cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                                  cur_active_role_dict_2['name'], get_cfp_role_path(cfp_root, cur_active_role_dict_2),
                                                   make_cmd))
 
     # finally
     if store_updated_cfp_json:
+        # always update version
+        cFp_data[__lignin_key__]['version'] = __version__
         with open(cfp_json_file, 'w') as json_file:
             json.dump(cFp_data, json_file, indent=4)
     return
