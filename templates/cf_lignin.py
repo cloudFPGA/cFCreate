@@ -350,9 +350,9 @@ def main():
                         os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
                                     export roleName2={}; export usedRoleDir2={}; make {}'
                                   .format(cfp_root,
+                                           cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                          __to_be_defined_key__, __to_be_defined_key__,  # role 2 should be totally ignored?
                                           # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
-                                          __to_be_defined_key__, __to_be_defined_key__,  # role 1 should be totally ignored?
-                                          cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
                                           make_cmd))
                     elif arguments['pr_full']:
                         # two active roles are required
