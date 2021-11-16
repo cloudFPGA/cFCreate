@@ -117,7 +117,7 @@ def main():
         print("[INFO] the python virutalenv for this project on this machine is missing, installing it...")
         os.system('cd {}; virtualenv -p {} {}'
                   .format(os.path.abspath(cfenv_dir + '/../'), sys_py_bin, __cfenv_small_name__))
-        os.system('source {}/bin/activate; pip install {}'.format(cfenv_dir, __cfenv_req_packages__))
+        os.system('/bin/bash -c "source {}/bin/activate; pip install {}"'.format(cfenv_dir, __cfenv_req_packages__))
 
     data['cfenvPath'] = cfenv_dir
     data['sysPython3Bin'] = sys_py_bin
