@@ -455,7 +455,6 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
         os.system("cd {}; git add lignin env/".format(folder_path))
 
     create_json(folder_path, envs)
-    os.system("chmod +x {}".format(env_file))
     if json_extend or backup_json:
         update_json(folder_path, update_list=additional_envs)
     # now, load new data
@@ -473,6 +472,7 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
         for i in range(0, len(__match_regex__)):
             out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
         outfile.write(out)
+    os.system("chmod +x {}".format(env_file))
 
     return 0
 

@@ -41,6 +41,7 @@ xpr/
 #env/
 this_machine_env.sh
 dcps/
+cfenv-small/
 
 *.dcp
 user.json
