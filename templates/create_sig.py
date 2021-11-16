@@ -35,8 +35,8 @@ import json
 import hashlib
 
 # 'hardcoded' version strings
-__THIS_FILE_VERSION_NUMBER__ = 3
-__THIS_FILE_VERSION_STRING__ = "0.0.3"
+__THIS_FILE_VERSION_NUMBER__ = 1
+__THIS_FILE_VERSION_STRING__ = "0.1.3"
 __THIS_FILE_ALGORITHM_VERSION = 'hc1'  # hash concat version 1
 
 __cfp_json_path__ = '/../cFp.json'
