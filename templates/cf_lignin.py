@@ -281,7 +281,7 @@ def main():
                     print(info_str)
                     # start make and OVERWRITE the environment variables
                     os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
-                                export roleName2={}; export usedRoleDir2={}; make {}'
+                                export roleName2={}; export usedRole2Dir={}; make {}'
                               .format(cfp_root,
                                       # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
                                       __to_be_defined_key__, __to_be_defined_key__,  # role 1 should be totally ignored?
@@ -328,7 +328,7 @@ def main():
                         cFp_data['usedRoleDir'] = cur_active_role_dict_1['path']
                         if write_2nd_role:
                             cFp_data['roleName2'] = cur_active_role_dict_2['name']
-                            cFp_data['usedRoleDir2'] = cur_active_role_dict_2['path']
+                            cFp_data['usedRole2Dir'] = cur_active_role_dict_2['path']
                         store_updated_cfp_json = True
         elif arguments['build']:
             cur_active_role = cFp_data[__lignin_key__]['active_role']
@@ -354,7 +354,7 @@ def main():
                         print(info_str)
                         # start make and OVERWRITE the environment variables
                         os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
-                                    export roleName2={}; export usedRoleDir2={}; make {}'
+                                    export roleName2={}; export usedRole2Dir={}; make {}'
                                   .format(cfp_root,
                                            cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
                                           __to_be_defined_key__, __to_be_defined_key__,  # role 2 should be totally ignored?
@@ -384,7 +384,7 @@ def main():
                                 print(info_str)
                                 # start make and OVERWRITE the environment variables
                                 os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
-                                            export roleName2={}; export usedRoleDir2={}; make {}'
+                                            export roleName2={}; export usedRole2Dir={}; make {}'
                                           .format(cfp_root,
                                                   cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
                                                   cur_active_role_dict_2['name'], get_cfp_role_path(cfp_root, cur_active_role_dict_2),
