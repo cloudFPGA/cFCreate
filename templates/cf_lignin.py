@@ -108,7 +108,7 @@ def main():
     # first, get and parse cFp.json
     cfp_root = os.environ['cFpRootDir']
     cfp_env_folder = os.path.abspath(cfp_root + '/env/')
-    cfenv_small_py_bin = os.path.abspath(cfp_root + 'env/cfenv-small/bin/python3.8')
+    cfenv_small_py_bin = os.path.abspath(cfp_root + 'env/cfenv-small/bin/python3')
     cfp_json_file = os.path.abspath(cfp_root + '/' + __cfp_json_name__)
     with open(cfp_json_file, 'r') as json_file:
         cFp_data = json.load(json_file)
