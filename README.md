@@ -263,14 +263,30 @@ $ git push
 
 Further information about git submodules can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
+`sra tools` as bash alias
+----------------------------
 
+If you want to use the `./sra` command withou the `./`, you can add the following lines to your `~/.bashrc`:
+```bash
+srafunc(){
+	cur_pwd=$(pwd)
+	srat=$cur_pwd/sra
+	if [ -f "$srat" ]; then
+		$srat
+	else
+		echo "Error: No cloudFPGA sra tools present in this folder."
+	fi
+}
 
-Middleware support
+alias sra=srafunc
+```
+
+Afterwards, activate it by reloading the bashrc (`source ~/.bashrc`). 
+
+Mantle support
 --------------------
 
-As of the time being, if a Middleware is present or not is determined by the chosen SRA type. 
-If an SRA type with Middleware is selected, `cFCreate` will set all dependencies and environments automatically.
-
+Mantles/Middlewares can be configured like any other cFa. Please refer to the documentation of the particular Mantle.
 
 
 Known Limitations/Bugs

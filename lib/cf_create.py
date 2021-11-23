@@ -36,7 +36,7 @@ from pprint import pprint
 
 __version__ = 0.8
 
-docstr="""cloudFPGA Project Creation Framework
+docstr = """cloudFPGA Project Creation Framework
 cfBuild creates or updates cloudFPGA projects (cFp) based on the cloudFPGA Development Kit (cFDK).
 
 Usage: 
@@ -78,7 +78,7 @@ DEFAULT_SRA = "Themisto"
 __env_file_name__ = "this_machine_env.sh"
 __version_string__ = "This cFp was created by cFCreate " + str(__version__)
 __to_be_defined_key__ = 'to-be-defined'
-__lignin_key__ = 'lignin-conf'
+__sra_tool_key__ = 'srat-conf'
 
 default_questions = [
     {
@@ -113,7 +113,7 @@ vivado_question = {
     'type': 'input',
     'name': 'xilinx_settings',
     'message': 'The command \'vivado\' is not in the default \'$PATH\'. Please specify the path to the Xilinx environments:',
-    'default': '/opt/Xilinx/Vivado/2017.4/settings64.sh'
+    'default': '/opt/xilinx/Vivado/2019.2/settings64.sh'
 }
 
 # pr_questions = [
@@ -140,48 +140,50 @@ vivado_question = {
 #     },
 # ]
 
-__xilinx_cmd_key__ = "xilinx_cmd"
+# TODO: deactivated for the moment, hard to do machine independent
+# __xilinx_cmd_key__ = "xilinx_cmd"
 
-__match_regex__ = []
-__replace_regex__ = []
-
-__match_regex__.append("##SOURCE_VIVADO##")
-__replace_regex__.append(__xilinx_cmd_key__)
-
-__match_regex__.append("##ROOTDIR##")
-__replace_regex__.append("abs_path")
-
-__match_regex__.append("##MOD##")
-__replace_regex__.append("cf_mod")
-
-__match_regex__.append("##SRA##")
-__replace_regex__.append("cf_sra")
-
-__match_regex__.append("##DIR1##")
-__replace_regex__.append("usedRoleDir")
-
-__match_regex__.append("##DIR2##")
-__replace_regex__.append("usedRoleDir2")
-
-__match_regex__.append("##ROLE1##")
-__replace_regex__.append("roleName1")
-
-__match_regex__.append("##ROLE2##")
-__replace_regex__.append("roleName2")
-
-__match_regex__.append("##virtual_path##")
-__replace_regex__.append("cfenvPath")
-
-__match_regex__.append("##python3_bin##")
-__replace_regex__.append("sysPython3Bin")
+# TODO: deactivated for the moment
+# __match_regex__ = []
+# __replace_regex__ = []
+#
+# __match_regex__.append("##SOURCE_VIVADO##")
+# __replace_regex__.append(__xilinx_cmd_key__)
+#
+# __match_regex__.append("##ROOTDIR##")
+# __replace_regex__.append("abs_path")
+#
+# __match_regex__.append("##MOD##")
+# __replace_regex__.append("cf_mod")
+#
+# __match_regex__.append("##SRA##")
+# __replace_regex__.append("cf_sra")
+#
+# __match_regex__.append("##DIR1##")
+# __replace_regex__.append("usedRoleDir")
+#
+# __match_regex__.append("##DIR2##")
+# __replace_regex__.append("usedRoleDir2")
+#
+# __match_regex__.append("##ROLE1##")
+# __replace_regex__.append("roleName1")
+#
+# __match_regex__.append("##ROLE2##")
+# __replace_regex__.append("roleName2")
+#
+# __match_regex__.append("##virtual_path##")
+# __replace_regex__.append("cfenvPath")
+#
+# __match_regex__.append("##python3_bin##")
+# __replace_regex__.append("sysPython3Bin")
 
 __SRA_config_keys__ = []
 __SRA_config_keys__.append("additional_lines")  # must be at position 0!
-__SRA_config_keys__.append(__lignin_key__)
+__SRA_config_keys__.append(__sra_tool_key__)
 
 __json_backup_keys__ = []
 __json_backup_keys__.append("additional_lines")
-__json_backup_keys__.append(__lignin_key__)
+__json_backup_keys__.append(__sra_tool_key__)
 
 
 def create_cfp_dir_structure(folder_path):
@@ -283,16 +285,18 @@ def upgrade_existing_cfdk(cfdk_tag, cfdk_zip, folder_path, git_url=None):
 def prepare_questions(folder_path, additional_defaults=None):
     # check vivado path
     questions = []
-    rc = os.system("vivado -version  > /dev/null 2>&1")
-    if rc != 0:
-        questions.append(vivado_question)
+
+    # TODO: deactivated for the moment, hard to do machine independent
+    # rc = os.system("vivado -version  > /dev/null 2>&1")
+    # if rc != 0:
+    #     questions.append(vivado_question)
 
     mods_available = []
     mod_default = 0
     sra_available = []
     sra_default = 0
 
-    subfolders = [f.name for f in os.scandir("{}/cFDK/SRA/LIB/SHELL".format(folder_path)) if f.is_dir() ]
+    subfolders = [f.name for f in os.scandir("{}/cFDK/SRA/LIB/SHELL".format(folder_path)) if f.is_dir()]
     i = 0
     for f in subfolders:
         if f != "LIB":
@@ -301,7 +305,7 @@ def prepare_questions(folder_path, additional_defaults=None):
                 sra_default = i
             i += 1
 
-    subfolders = [f.name for f in os.scandir("{}/cFDK/MOD".format(folder_path)) if f.is_dir() ]
+    subfolders = [f.name for f in os.scandir("{}/cFDK/MOD".format(folder_path)) if f.is_dir()]
     i = 0
     for f in subfolders:
         mods_available.append(f)
@@ -357,6 +361,8 @@ def create_json(folder_path, envs):
     json_data['usedRoleDir2'] = envs['usedRoleDir2']
     json_data['roleName1'] = envs['roleName1']
     json_data['roleName2'] = envs['roleName2']
+    if 'additional_lines' in envs:
+        json_data['additional_lines'] = envs['additional_lines']
 
     with open("{}/cFp.json".format(folder_path), "w+") as json_file:
         json.dump(json_data, json_file, indent=4)
@@ -446,13 +452,13 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     os.system("cp {}/admin_sig.py {}/env/".format(config_template_folder, folder_path))
     os.system("cp {}/admin_sig.sh {}/env/".format(config_template_folder, folder_path))
     os.system("cp {}/get_latest_dcp.py {}/env/".format(config_template_folder, folder_path))
-    os.system("cp {}/cf_lignin.py {}/env/".format(config_template_folder, folder_path))
-    os.system("cp {}/lignin {}/".format(config_template_folder, folder_path))
-    os.system("chmod +x {}/lignin".format(folder_path))
+    os.system("cp {}/cf_sratool.py {}/env/".format(config_template_folder, folder_path))
+    os.system("cp {}/sra {}/".format(config_template_folder, folder_path))
+    os.system("chmod +x {}/sra".format(folder_path))
 
     if os.path.isdir(folder_path + '.git/'):
         # git config, add new files
-        os.system("cd {}; git add lignin env/".format(folder_path))
+        os.system("cd {}; git add sra env/".format(folder_path))
 
     create_json(folder_path, envs)
     if json_extend or backup_json:
@@ -467,12 +473,13 @@ def copy_templates_and_set_env(folder_path, envs, backup_json=False):
     envs['cfenvPath'] = cfenv_path
     envs['sysPython3Bin'] = sys_py_bin
 
-    with open("{}/machine_env.template".format(config_template_folder), "r") as input, open(env_file, "w") as outfile:
-        out = input.read()
-        for i in range(0, len(__match_regex__)):
-            out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
-        outfile.write(out)
-    os.system("chmod +x {}".format(env_file))
+    # TODO: deactivated for the moment, is done by sra tool anyhow (and better)
+    # with open("{}/machine_env.template".format(config_template_folder), "r") as input, open(env_file, "w") as outfile:
+    #     out = input.read()
+    #     for i in range(0, len(__match_regex__)):
+    #         out = re.sub(re.escape(__match_regex__[i]), envs[__replace_regex__[i]], out)
+    #     outfile.write(out)
+    # os.system("chmod +x {}".format(env_file))
 
     return 0
 
@@ -493,7 +500,9 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
             return "ERROR: Failed to add submodule cFa", 1
 
     # execute setup script
-    cmd_str = "/bin/bash -c \"source {}/env/setenv.sh && {}/{}/install/setup.sh '{}'\"".format(folder_abspath, folder_abspath, addon_name, addon_name)
+    cmd_str = "/bin/bash -c \"source {}/env/setenv.sh && {}/{}/install/setup.sh '{}'\"".format(folder_abspath,
+                                                                                               folder_abspath,
+                                                                                               addon_name, addon_name)
     print(cmd_str)
     rc = os.system(cmd_str)
     if rc != 0:
@@ -504,7 +513,6 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
     update_json_data['cFa'] = [str(addon_name)]
     # update_json(folder_path, update_json_data)
     update_json(folder_path, update_list=update_json_data)
-
 
     # commit changes if it is a git
     os.system("[ -d {}/.git/ ] && (cd {}; git add ./{}/ ;git commit -a -m'Installed cFa {}')".format(
@@ -523,16 +531,19 @@ def main():
 
     also_do_update = False
     if arguments['new']:
-        msg, rc = create_new_cfp(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path, git_url=arguments['--git-url'], git_init=arguments['--git-init'])
+        msg, rc = create_new_cfp(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path,
+                                 git_url=arguments['--git-url'], git_init=arguments['--git-init'])
         if rc != 0:
             print(msg)
             exit(1)
     elif arguments['adorn']:
-        msg, rc = install_cfa(folder_path, arguments['<folder-name-for-addon>'], git_url=arguments['--cfa-repo'], zip_path=arguments['--cfa-zip'])
+        msg, rc = install_cfa(folder_path, arguments['<folder-name-for-addon>'], git_url=arguments['--cfa-repo'],
+                              zip_path=arguments['--cfa-zip'])
         print(msg)
         exit(rc)
     elif arguments['upgrade']:
-        msg, rc = upgrade_existing_cfdk(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path, git_url=arguments['--git-url'])
+        msg, rc = upgrade_existing_cfdk(arguments['--cfdk-version'], arguments['--cfdk-zip'], folder_path,
+                                        git_url=arguments['--git-url'])
         if rc != 0:
             print(msg)
             exit(1)
@@ -576,18 +587,24 @@ def main():
     #     answers_pr['usedRoleDir'] = ""
     #     answers_pr['usedRoleDir2'] = ""
     #     answers_pr['roleName2'] = "unused"
-    # for now, the role setting is managed by lignin
+    # for now, the role setting is managed by sra-tool
     answers_pr['roleName1'] = 'default'
-    answers_pr['usedRoleDir'] = ''   # default
+    answers_pr['usedRoleDir'] = ''  # default
     answers_pr['roleName2'] = __to_be_defined_key__
     answers_pr['usedRoleDir2'] = __to_be_defined_key__
 
     envs = {**answers, **answers_pr}
-    if 'xilinx_settings' not in envs:
-        envs[__xilinx_cmd_key__] = ""
-    else:
-        # envs['xilinx_cmd'] = "source " + envs['xilinx_settings'] + "\n"
-        envs[__xilinx_cmd_key__] = "source " + envs['xilinx_settings'] + "\n"
+
+    # TODO: deactivated for the moment, hard to do machine independent
+    # if 'xilinx_settings' not in envs:
+    #     envs[__xilinx_cmd_key__] = ""
+    # else:
+    #     # envs['xilinx_cmd'] = "source " + envs['xilinx_settings'] + "\n"
+    #     envs[__xilinx_cmd_key__] = "source " + envs['xilinx_settings'] + "\n"
+    #     # save it for later
+    #     if 'additional_lines' not in envs:
+    #         envs['additional_lines'] = []
+    #     envs['additional_lines'].append(envs[__xilinx_cmd_key__])
     envs['abs_path'] = os.path.abspath(folder_path)
     # pprint(envs)
 
@@ -606,6 +623,15 @@ def main():
     print("SUCCESS!\ncloudFPGA project in {} ready to use!".format(envs['abs_path']) +
           "\nDon't forget to `source env/setenv.sh`")
 
+    srat_fyi = "\npsst...just FYI: If you want to use the new 'sra' command without typing always " \
+               "'./' first, \nyou can add the following to your '~/.bashrc' and activate it with 'source ~/.bashrc' " \
+               "afterwards:\n"
+    srat_bashrc = '--------------\n'\
+                  'srafunc(){\n\tcur_pwd=$(pwd)\n\tsrat=$cur_pwd/sra\n\tif [ -f "$srat" ]; then\n\t\t$srat $@\n\telse' \
+                  '\n\t\techo "Error: No cloudFPGA sra tools present in this folder.\n\tfi\n}\n\nalias sra=srafunc\n'\
+                  '--------------\n'
+    print(srat_fyi + srat_bashrc)
+
 
 if __name__ == '__main__':
     if not (hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)):
@@ -614,5 +640,3 @@ if __name__ == '__main__':
         sys.exit(1)
     main()
     exit(0)
-
-
