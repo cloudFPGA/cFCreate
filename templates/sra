@@ -26,9 +26,15 @@
 #  *
 #  *
 
+# check for bash alias
+if [ "$0" == "./sra" ]; then
+  export SraToolShowHint="True"
+else
+  export SraToolShowHint="False"
+fi
+
 # 0. get current folder
 cur_dir=$(pwd)
-
 # so, some kind of bootstrapping
 # 1. source the cFp environment
 source $cur_dir/env/setenv.sh

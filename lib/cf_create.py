@@ -623,14 +623,15 @@ def main():
     print("SUCCESS!\ncloudFPGA project in {} ready to use!".format(envs['abs_path']) +
           "\nDon't forget to `source env/setenv.sh`")
 
-    srat_fyi = "\npsst...just FYI: If you want to use the new 'sra' command without typing always " \
-               "'./' first, \nyou can add the following to your '~/.bashrc' and activate it with 'source ~/.bashrc' " \
-               "afterwards:\n"
-    srat_bashrc = '--------------\n'\
-                  'srafunc(){\n\tcur_pwd=$(pwd)\n\tsrat=$cur_pwd/sra\n\tif [ -f "$srat" ]; then\n\t\t$srat $@\n\telse' \
-                  '\n\t\techo "Error: No cloudFPGA sra tools present in this folder.\n\tfi\n}\n\nalias sra=srafunc\n'\
-                  '--------------\n'
-    print(srat_fyi + srat_bashrc)
+    # srat_fyi = "\npsst...just FYI: If you want to use the new 'sra' command without typing always " \
+    #            "'./' first, \nyou can add the following to your '~/.bashrc' and activate it with 'source ~/.bashrc' " \
+    #            "afterwards:\n"
+    # srat_bashrc = '--------------\n'\
+    #               'srafunc(){\n\tcur_pwd=$(pwd)\n\tsrat=$cur_pwd/sra\n\tif [ -f "$srat" ]; then\n\t\t$srat $@\n\telse' \
+    #               '\n\t\techo "Error: No cloudFPGA sra tools present in this folder."\n\tfi\n}\n\nalias sra=srafunc\n'\
+    #               '--------------\n'
+    # if 'cFpSraToolAliasIsPresent' not in os.environ:
+    #     print(srat_fyi + srat_bashrc)
 
 
 if __name__ == '__main__':
