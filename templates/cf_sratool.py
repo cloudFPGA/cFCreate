@@ -407,7 +407,7 @@ def main():
                   '\n\t\techo "Error: No cloudFPGA sra tools present in this folder."\n\tfi\n}\n\nalias sra=srafunc\n' \
                   '--------------\n'
             print(srat_fyi + srat_bashrc)
-            os.system('cd {}/env; echo -e "export SraToolHintWasShown=1\n" >> this_machine_env.sh'
+            os.system('cd {}/env; echo "export SraToolHintWasShown=1" >> this_machine_env.sh'
                       .format(cfp_root))
 
     return
