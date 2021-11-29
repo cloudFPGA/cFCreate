@@ -18,7 +18,7 @@ However, `python3` is required to build cFp bitstreams.
 If you received this repository as Zip-folder, extract it into `<your-path>/cFCreate`. Otherwise clone this repositroy into `<your-path/cFCreate`. 
 
 ```bash
-$ cd <your-path>/cFBuid/
+$ cd <your-path>/cFCreate/
 $ which python3.8
 /usr/bin/python3.8
 $ virtualenv -p /usr/bin/python3.8 cfenv
