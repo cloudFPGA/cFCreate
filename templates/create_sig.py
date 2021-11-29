@@ -35,8 +35,8 @@ import json
 import hashlib
 
 # 'hardcoded' version strings
-__THIS_FILE_VERSION_NUMBER__ = 1
-__THIS_FILE_VERSION_STRING__ = "0.1.3"
+__THIS_FILE_VERSION_NUMBER__ = 2
+__THIS_FILE_VERSION_STRING__ = "0.1.4"
 __THIS_FILE_ALGORITHM_VERSION = 'hc1'  # hash concat version 1
 
 __cfp_json_path__ = '/../cFp.json'
@@ -44,6 +44,7 @@ __shell_type_key__ = 'cFpSRAtype'
 __mod_type_key__ = 'cFpMOD'
 __dcps_folder_name__ = '/dcps/'
 __sig_file_ending__ = 'sig'
+__rpt_file_ending__ = 'rpt'
 __ignore_key__ = 'ignore'
 __ignore_hash__ = '719a965d6d8936f09550efb75bcf4bff9f956143d9f78e30b62b966b6a9ebc35'  # echo -n 'ignore verify' | sha256sum
 
@@ -168,6 +169,11 @@ def main(new_bin_file_name, pr_verify_rpt_file_name):
 
     with open(sig_file_path, 'w') as outfile:
         json.dump(new_sig, outfile)
+
+    # save current pr_verify
+    if not ignore_pr_verify:
+        verify_report_name = os.path.abspath(dcps_folder + '/5_' + new_bin_file_name[2:-4] + '.' + __rpt_file_ending__)
+        os.system("cp -f {} {}".format(pr_verify_rpt_file_path, verify_report_name))
 
     return 0
 
