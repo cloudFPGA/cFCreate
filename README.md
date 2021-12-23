@@ -1,10 +1,11 @@
-cFCreate
-==============
+
+# cFCreate
+
 **Framework for creating and updating cloudFPGA projects**
 
 
-Requirements
--------------
+## Requirements
+
 The cFCreate script has some python dependencies, hence we recommend the usage of virtualenvs. 
 
 **This python Virtual environment is only required for the execution of cFCreate, not for the build of the FPGA bistreams in a cFp!**
@@ -48,8 +49,8 @@ $ apt install python3.8-dev
 the cloudFPGA framework!** 
 If cFCreate is moved to a different location, all projects must be updated (using `cFCreate update`).
 
-Usage
------------
+## Usage
+
 ```bash
 $ ./cFCreate -h
 cloudFPGA Project Management Framework
@@ -160,8 +161,7 @@ If the cFp is a git-repository, all changes will be commited by `cFCreate` (mayb
 It is *not* necessary to run `cFCreate update` afterwards on any machine.
 
 
-Structure of a cFp
---------------
+## Structure of a cFp
 
 ```bash
 $ tree <cFp_repo>
@@ -185,8 +185,7 @@ $ tree <cFp_repo>
 ```
 
 
-Build a cFp
-----------------
+## Build a cFp
 
 See the documentation of cFDK.
 In short:
@@ -199,8 +198,7 @@ $ make pr
 If synthesis fails without an error retry the `make monolithic` or open the project with `Vivado` and start synthesis there.
 Resulting bitfiles are in `./dcps/`.
 
-Git integration
---------------------
+## Git integration
 
 **If not done with the `--git-init` option** during the creation of a new cFp, 
 the following steps are necessary to use the cFp as git repository and/or use the cFDK as git-submodule:
@@ -263,8 +261,7 @@ $ git push
 
 Further information about git submodules can be found [here](https://git-scm.com/book/en/v2/Git-Tools-Submodules).
 
-`sra tools` as bash alias
-----------------------------
+## `sra tools` as bash alias
 
 If you want to use the `./sra` command withou the `./`, you can add the following lines to your `~/.bashrc`:
 ```bash
@@ -283,13 +280,11 @@ alias sra=srafunc
 
 Afterwards, activate it by reloading the bashrc (`source ~/.bashrc`). 
 
-Mantle support
---------------------
+## Mantle support
 
 Mantles/Middlewares can be configured like any other cFa. Please refer to the documentation of the particular Mantle.
 
 
-Known Limitations/Bugs
------------------------
+## Known Limitations/Bugs
 
 * Only one Middleware per SRA is supported. Hence, the current flexibility is: `Shell:Middleware:Role = 1:1:2`
