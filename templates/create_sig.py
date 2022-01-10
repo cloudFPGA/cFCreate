@@ -1,5 +1,5 @@
 # /*******************************************************************************
-#  * Copyright 2016 -- 2021 IBM Corporation
+#  * Copyright 2016 -- 2022 IBM Corporation
 #  *
 #  * Licensed under the Apache License, Version 2.0 (the "License");
 #  * you may not use this file except in compliance with the License.
@@ -35,8 +35,8 @@ import json
 import hashlib
 
 # 'hardcoded' version strings
-__THIS_FILE_VERSION_NUMBER__ = 2
-__THIS_FILE_VERSION_STRING__ = "0.1.4"
+__THIS_FILE_VERSION_NUMBER__ = 3
+__THIS_FILE_VERSION_STRING__ = "0.1.5"
 __THIS_FILE_ALGORITHM_VERSION = 'hc1'  # hash concat version 1
 
 __cfp_json_path__ = '/../cFp.json'
