@@ -81,7 +81,7 @@ Options:
     --cfa-repo=<cfagit>         Link to the cFa git repository
     --cfa-zip=<path-to-zip>     Path to a cFa zip folder
 
-Copyright IBM Research, All Rights Reserved.
+Copyright IBM Research, licensed under the Apache License 2.0.
 Contact: {ngl,fab,wei}@zurich.ibm.com
 ```
 
