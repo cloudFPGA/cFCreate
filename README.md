@@ -73,7 +73,7 @@ Options:
     -h --help       Show this screen.
     -v --version    Show version.
     
-    --cfdk-version=<cfdkv>      Specifies that the cFDK can be accessed via Github and with cFDK-version should be used.
+    --cfdk-version=<cfdkv>      Specifies that the cFDK can be accessed via Github and which cFDK-version should be used.
                                 'latest' will use the latest available version.
     --git-url=<git-url>         Uses the given URL to clone cFDK instead the default.
     --cfdk-zip=<path-to-zip>    If the cFDK can't be reached via Github, a zip can be used.
@@ -88,10 +88,10 @@ Contact: {ngl,fab,wei}@zurich.ibm.com
 There are three typical use-cases:
 1. [Create a new project from scratch with an empty folder](#1-create-new-cloudfpga-project-cfp)
 2. [Update an existing project, e.g. after a fresh clone or to switch Shell types](#2-update-an-existing-cfp)
-3. [Beatify an existing project with an addon](#3-add-a-cloudfpga-addon-cfa-to-an-existing-cfp)
+3. [Beautify an existing project with an addon](#3-add-a-cloudfpga-addon-cfa-to-an-existing-cfp)
 
 
-**General notice:** The terms *'git url'* or 'git repo' always refrer to a link that can be *used to clone the repository!*
+**General notice:** The terms *'git url'* or 'git repo' always refer to a link that can be *used to clone the repository!*
 E.g. `git@git.example.com:group/repo.git` or `https://git.example.com/group/repo.git`.
 If *'a zip folder'* is mentioned, a zip-file provided by the cloudFPGA team is meant, so that it has the right structure etc.
 
