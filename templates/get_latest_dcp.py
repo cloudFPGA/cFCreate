@@ -143,6 +143,7 @@ def main():
                   .format(target_file_name, latest_shell_id))
             exit(0)
 
+    print('[cFBuild] Update detected, downloading newest version... (can take some minutes)\n')
     # 4. download if new version available
     download_url = "http://"+cfrm_url+"/composablelogic/"+str(latest_shell_id)+"/dcp" + \
                    "?username={0}&password={1}".format(__openstack_user__, __openstack_pw__)
