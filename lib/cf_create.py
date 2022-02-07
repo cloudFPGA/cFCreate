@@ -71,7 +71,8 @@ Contact: {ngl,fab,wei, did, hle}@zurich.ibm.com
 """
 
 config_default_cfdk_url = "git@github.ibm.com:cloudFPGA/cFDK.git"
-config_template_folder = './templates'
+__me_abs_dir__ = os.path.dirname(os.path.realpath(__file__))
+config_template_folder = os.path.abspath(__me_abs_dir__ + '/../templates')
 
 DEFAULT_MOD = "FMKU60"
 DEFAULT_SRA = "Themisto"
