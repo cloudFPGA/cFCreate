@@ -58,7 +58,7 @@ Options:
     -h --help       Show this screen.
     -v --version    Show version.
     
-    --cfdk-version=<cfdkv>      Specifies that the cFDK can be accessed via Github and with cFDK-version should be used.
+    --cfdk-version=<cfdkv>      Specifies that the cFDK can be accessed via Github and which cFDK-version should be used.
                                 'latest' will use the latest available version.
     --git-url=<git-url>         Uses the given URL to clone cFDK instead the default.
     --cfdk-zip=<path-to-zip>    If the cFDK can't be reached via Github, a zip can be used.
