@@ -105,17 +105,17 @@ def get_cfp_role_path(cfp_root, role_entry):
 def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cFp_data, dcp_file_path, meta_file_path):
     if arguments['update-shell']:
         # os.system("{} {}/get_latest_dcp.py".format(os.environ['cFsysPy3_cmd'], cfp_env_folder))
-        os.system("{} {}/get_latest_dcp.py".format(cfenv_small_py_bin, cfp_env_folder))
-        return cFp_data, False, 0
+        rc = os.system("{} {}/get_latest_dcp.py".format(cfenv_small_py_bin, cfp_env_folder))
+        return cFp_data, False, rc
     if arguments['clean']:
         if arguments['--full']:
-            os.system('cd {}; make full_clean'.format(cfp_root))
+            rc = os.system('cd {}; make full_clean'.format(cfp_root))
         else:
-            os.system('cd {}; make clean'.format(cfp_root))
-        return cFp_data, False, 0
+            rc = os.system('cd {}; make clean'.format(cfp_root))
+        return cFp_data, False, rc
     if arguments['open-gui']:
-        os.system('cd; vivado xpr/top{}.xpr'.format(cfp_root, cFp_data[__mod_type_key__]))
-        return cFp_data, False, 0
+        rc = os.system('cd; vivado xpr/top{}.xpr'.format(cfp_root, cFp_data[__mod_type_key__]))
+        return cFp_data, False, rc
 
     if arguments['config']:
         if arguments['show']:
@@ -185,6 +185,7 @@ def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cF
                 return cFp_data, False, -1
 
     if arguments['build'] and not arguments['admin']:
+        rc = -1
         cur_active_role = cFp_data[__sra_key__]['active_role']
         if arguments['--role'] is not None:
             cur_active_role = arguments['--role']
@@ -211,9 +212,9 @@ def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cF
             print("[sra:INFO] Starting to create the project files for a monolithic design with role {}..."
                   .format(cur_active_role))
             # start make and OVERWRITE the environment variables
-            os.system('cd {}; export {}=true; export roleName1={}; export usedRoleDir={}; make monolithic_proj'
-                      .format(cfp_root, __sratool_user_env_key__, cur_active_role_dict['name'],
-                              get_cfp_role_path(cfp_root, cur_active_role_dict)))
+            rc = os.system('cd {}; export {}=true; export roleName1={}; export usedRoleDir={}; make monolithic_proj'
+                           .format(cfp_root, __sratool_user_env_key__, cur_active_role_dict['name'],
+                                   get_cfp_role_path(cfp_root, cur_active_role_dict)))
         elif arguments['monolithic']:
             info_str = "[sra:INFO] Starting to to build a monolithic design with role {}" \
                 .format(cur_active_role)
@@ -228,9 +229,9 @@ def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cF
             info_str += '...'
             print(info_str)
             # start make and OVERWRITE the environment variables
-            os.system('cd {}; export {}=true; export roleName1={}; export usedRoleDir={}; make {}'
-                      .format(cfp_root, __sratool_user_env_key__, cur_active_role_dict['name'],
-                              get_cfp_role_path(cfp_root, cur_active_role_dict), make_cmd))
+            rc = os.system('cd {}; export {}=true; export roleName1={}; export usedRoleDir={}; make {}'
+                           .format(cfp_root, __sratool_user_env_key__, cur_active_role_dict['name'],
+                                   get_cfp_role_path(cfp_root, cur_active_role_dict), make_cmd))
         elif arguments['pr']:
             if with_incr:
                 print("[sra:INFO] Incremental compile with a partial reconfiguration design is not (yet) " +
@@ -244,26 +245,26 @@ def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cF
             # check for dcp
             if not os.path.isfile(dcp_file_path) or not os.path.isfile(meta_file_path):
                 # os.system("{} {}/get_latest_dcp.py".format(os.environ['cFsysPy3_cmd'], cfp_env_folder))
-                os.system("{} {}/get_latest_dcp.py".format(cfenv_small_py_bin, cfp_env_folder))
-                if not os.path.isfile(dcp_file_path):
+                rc = os.system("{} {}/get_latest_dcp.py".format(cfenv_small_py_bin, cfp_env_folder))
+                if (not os.path.isfile(dcp_file_path)) or (rc != 0):
                     print("sra:ERROR] No DCP present, can not build pr designs. Stop.")
                     return cFp_data, False, -1
             info_str += '...'
             print(info_str)
             # start make and OVERWRITE the environment variables
-            os.system('cd {}; export {}=true; export roleName1={}; export usedRoleDir={}; \
+            rc = os.system('cd {}; export {}=true; export roleName1={}; export usedRoleDir={}; \
                         export roleName2={}; export usedRole2Dir={}; make {}'
-                      .format(cfp_root, __sratool_user_env_key__,
-                              # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
-                              __to_be_defined_key__, __to_be_defined_key__,  # role 1 should be totally ignored?
-                              cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
-                              make_cmd))
-        return cFp_data, False, 0
+                           .format(cfp_root, __sratool_user_env_key__,
+                                   # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                   __to_be_defined_key__, __to_be_defined_key__,  # role 1 should be totally ignored?
+                                   cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                   make_cmd))
+        return cFp_data, False, rc
 
     if arguments['admin']:
         if arguments['full_clean']:
-            os.system('cd {}; make full_clean'.format(cfp_root))
-            return cFp_data, False, 0
+            rc = os.system('cd {}; make full_clean'.format(cfp_root))
+            return cFp_data, False, rc
         if arguments['set-2nd-role']:
             cFp_data[__sra_key__][__admin_key__]['2nd-role'] = arguments['<name>']
             return cFp_data, True, 0
@@ -330,14 +331,15 @@ def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cF
                 print(info_str)
                 # start make and OVERWRITE the environment variables
                 # no __sratool_user_env_key__ in admin case
-                os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
+                rc = os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
                             export roleName2={}; export usedRole2Dir={}; make {}'
-                          .format(cfp_root,
-                                  cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
-                                  __to_be_defined_key__, __to_be_defined_key__,  # role 2 should be totally ignored?
-                                  # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
-                                  make_cmd))
-                return cFp_data, False, 0
+                               .format(cfp_root,
+                                       cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                       __to_be_defined_key__, __to_be_defined_key__,
+                                       # role 2 should be totally ignored?
+                                       # cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                       make_cmd))
+                return cFp_data, False, rc
             elif arguments['pr_full']:
                 # two active roles are required
                 cur_active_role_2 = cFp_data[__sra_key__][__admin_key__]['2nd-role']
@@ -362,13 +364,14 @@ def handle_arguments(arguments, cfenv_small_py_bin, cfp_env_folder, cfp_root, cF
                 print(info_str)
                 # start make and OVERWRITE the environment variables
                 # no __sratool_user_env_key__ in admin case
-                os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
+                rc = os.system('cd {}; export roleName1={}; export usedRoleDir={}; \
                             export roleName2={}; export usedRole2Dir={}; make {}'
-                          .format(cfp_root,
-                                  cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
-                                  cur_active_role_dict_2['name'], get_cfp_role_path(cfp_root, cur_active_role_dict_2),
-                                  make_cmd))
-                return cFp_data, False, 0
+                               .format(cfp_root,
+                                       cur_active_role_dict['name'], get_cfp_role_path(cfp_root, cur_active_role_dict),
+                                       cur_active_role_dict_2['name'],
+                                       get_cfp_role_path(cfp_root, cur_active_role_dict_2),
+                                       make_cmd))
+                return cFp_data, False, rc
     return cFp_data, False, 0
 
 
@@ -422,11 +425,14 @@ def main():
     if 'SraToolShowHint' in os.environ:
         if os.environ['SraToolShowHint'] == "True" and not 'SraToolHintWasShown' in os.environ:
             srat_fyi = "\npsst...just FYI: If you want to use the new 'sra' command without typing always " \
-                       "'./' first, \nyou can add the following to your '~/.bashrc' and activate it with 'source ~/.bashrc' " \
+                       "'./' first, \nyou can add the following to your '~/.bashrc' and activate it with 'source " \
+                       "~/.bashrc' " \
                        "afterwards:\n"
             srat_bashrc = '--------------\n' \
-                          'srafunc(){\n\tcur_pwd=$(pwd)\n\tsrat=$cur_pwd/sra\n\tif [ -f "$srat" ]; then\n\t\t$srat $@\n\telse' \
-                          '\n\t\techo "Error: No cloudFPGA sra tools present in this folder."\n\tfi\n}\n\nalias sra=srafunc\n' \
+                          'srafunc(){\n\tcur_pwd=$(pwd)\n\tsrat=$cur_pwd/sra\n\tif [ -f "$srat" ]; then\n\t\t$srat ' \
+                          '$@\n\telse' \
+                          '\n\t\techo "Error: No cloudFPGA sra tools present in this folder."\n\tfi\n}\n\nalias ' \
+                          'sra=srafunc\n' \
                           '--------------\n'
             print(srat_fyi + srat_bashrc)
             os.system('cd {}/env; echo "export SraToolHintWasShown=1" >> this_machine_env.sh'
@@ -438,7 +444,12 @@ if __name__ == '__main__':
     # vitrualenv is activated by the bash script
     if not (hasattr(sys, 'real_prefix') or (hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix)):
         # This works with virtualenv for Python 3 and 2 and also for the venv module in Python 3
-        print("ERROR: It looks like this sra isn't running in a virtual environment. STOP.")
+        print("[sra:ERROR] It looks like this sra isn't running in a virtual environment. STOP.")
         sys.exit(1)
-    main()
-    exit(0)
+    mrc = main()
+    if mrc != 0:
+        if mrc != -1 and mrc != 1:
+            print("[sra:DEBUG] Internal error code returned: {}\n".format(mrc))
+        sys.exit(1)
+    sys.exit(0)
+
