@@ -31,7 +31,6 @@ import os
 import sys
 from docopt import docopt
 import re
-from PyInquirer import prompt, print_json
 from pprint import pprint
 
 __version__ = 0.8
@@ -523,6 +522,7 @@ def install_cfa(folder_path, addon_name, git_url=None, zip_path=None):
 
 
 def main():
+    from PyInquirer import prompt, print_json
     arguments = docopt(docstr, version=__version__)
 
     folder_path = arguments['<path-to-project-folder>']
